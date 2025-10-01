@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مترجم زبان هوشمند</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN for modern, clean icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PWA Manifest and Icons -->
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="مترجم هوشمند">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap');
+        
+        /* Base styles */
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+            background-color: #1a202c; 
+            background-image: linear-gradient(135deg, #1f2937 25%, #4b5563 100%);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 0; /* Removed padding */
+            margin: 0;
+            transition: background-color 0.3s;
+        }
+
+        /* Dark Mode Specific Styles */
+        .dark {
+            background-color: #0d1117;
+            background-image: linear-gradient(135deg, #0d1117 25%, #161b22 100%);
+        }
+        /* phone-frame now acts as the main viewport */
+        .phone-frame {
+            width: 100%;
+            max-width: 420px;
+            /* Border radius removed for full-screen mobile look */
+            border-radius: 0; 
+            background-color: rgba(255, 255, 255, 0.95); 
+            backdrop-filter: blur(8px);
+            box-shadow: none; /* Shadow removed */
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Use full viewport height */
+            position: relative;
+        }
+
+        .dark .phone-frame {
+            background-color: rgba(22, 27, 34, 0.95);
+        }
+        .dark .card-container {
+            background-color: rgba(30, 34, 42, 0.8);
+            border: 1px solid #30363d;
+        }
+        .dark .text-input-box, .dark .nav-bar, .dark .header {
+            color: #c9d1d9;
+            background-color: transparent;
+        }
+        .dark .bg-white { background-color: #161b22 !important; }
+        .dark .border-gray-200 { border-color: #30363d !important; }
+        .dark .bg-gray-50\/70 { background-color: rgba(13, 17, 23, 0.7) !important; }
+        .dark .text-gray-900 { color: #c9d1d9; }
+        .dark .text-gray-700 { color: #9b9b9b; }
+        .dark .bg-gray-100 { background-color: #30363d !important; }
+        .dark .hover\:bg-gray-200:hover { background-color: #444c56 !important; }
+        .dark .text-gray-400 { color: #8b949e; }
+        .dark .text-gray-600 { color: #8b949e; }
+        .dark .text-gray-800 { color: #c9d1d9; }
+        .dark .picker-item:hover { background-color: #30363d !important; }
+        .dark .bg-blue-100 { background-color: #0c4a6e !important; }
+        .dark .border-gray-300 { border-color: #444c56; }
+        .dark input, .dark select { background-color: #161b22 !important; color: #c9d1d9; }
+
+        .text-input-box {
+            min-height: 120px;
+            resize: none;
+            border: none;
+            padding: 8px;
+            outline: none;
+            width: 100%;
+            transition: all 0.3s;
+            line-height: 1.6;
+            background: transparent;
+        }
+        .card-container {
+            border: 1px solid #e5e7eb;
+            background-color: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(4px);
+            transition: box-shadow 0.3s, background-color 0.3s, border-color 0.3s;
+        }
+        .card-container:focus-within {
+            box-shadow: 0 4px 10px rgba(66, 153, 225, 0.3);
+        }
+
+        /* Full-screen Modal Styles (Overlay) */
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(10px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            opacity: 0;
+            /* Smoother opacity transition */
+            transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+            touch-action: none; 
+        }
+        .modal-overlay.active {
+            opacity: 1;
+        }
+
+        /* --- Center Modal (Settings, Language Picker, Model Picker, Tone Picker) --- */
+        .modal-content-center {
+            width: 90%;
+            max-width: 380px;
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            
+            transform: scale(0.95); 
+            opacity: 0;
+            /* Smoother scale transition */
+            transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            max-height: 80vh; 
+        }
+        .modal-overlay.active .modal-content-center {
+            transform: scale(1);
+            opacity: 1;
+        }
+        .dark .modal-content-center {
+            background-color: rgba(22, 27, 34, 0.9);
+        }
+        
+        /* --- Bottom Sheet Modal (History, Favorites, Camera) --- */
+        .modal-content-bottom-sheet {
+            width: 100%;
+            max-width: 420px; /* Inherit max width from phone-frame */
+            height: 85vh; /* Fixed height for Bottom Sheet */
+            background-color: white;
+            border-radius: 0; 
+            border-top-left-radius: 24px; 
+            border-top-right-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 0; 
+            position: absolute; 
+            bottom: 0;
+            
+            transform: translateY(100%); 
+            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .modal-overlay.active .modal-content-bottom-sheet {
+            transform: translateY(0);
+        }
+        .dark .modal-content-bottom-sheet {
+            background-color: rgba(22, 27, 34, 0.9);
+        }
+        
+        /* Drag handle style for Bottom Sheet */
+        .drag-handle {
+            width: 40px;
+            height: 4px;
+            background-color: #ccc;
+            border-radius: 2px;
+            margin: 0 auto 8px auto;
+        }
+
+        /* History/Favorites Item Styles */
+        .history-item {
+            border-bottom: 1px solid #f3f4f6;
+            transition: background-color 0.2s;
+        }
+        .dark .history-item {
+            border-bottom-color: #30363d;
+        }
+        .history-item:hover {
+            background-color: #f3f4f6;
+        }
+        .dark .history-item:hover {
+            background-color: #30363d;
+        }
+        .picker-item {
+            padding: 12px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background-color 0.2s;
+        }
+        .picker-item:hover {
+            background-color: #e5e7eb;
+        }
+        .dark .picker-item:hover {
+            background-color: #30363d;
+        }
+        
+        /* Custom Compact Toggle Styles to Prevent Overflow in RTL Layout */
+        #darkModeToggle {
+            display: none;
+        }
+        #darkModeToggle + div {
+            position: relative;
+            width: 32px !important;
+            height: 18px !important;
+            background-color: #d1d5db !important;
+            border-radius: 9px !important;
+            transition: background-color 0.2s ease !important;
+            cursor: pointer;
+            display: inline-block;
+        }
+        .dark #darkModeToggle + div {
+            background-color: #4b5563 !important;
+        }
+        #darkModeToggle:checked + div {
+            background-color: #3b82f6 !important;
+        }
+        .dark #darkModeToggle:checked + div {
+            background-color: #1d4ed8 !important;
+        }
+        #darkModeToggle + div::after {
+            content: '' !important;
+            position: absolute !important;
+            top: 2px !important;
+            right: 2px !important; /* Right-aligned for RTL off state */
+            width: 14px !important;
+            height: 14px !important;
+            background-color: white !important;
+            border-radius: 50% !important;
+            border: 1px solid #9ca3af !important;
+            transition: transform 0.2s ease !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1) !important;
+            transform: translateX(0) !important;
+        }
+        .dark #darkModeToggle + div::after {
+            border-color: #6b7280 !important;
+        }
+        #darkModeToggle:checked + div::after {
+            transform: translateX(-16px) !important; /* Move left in RTL */
+        }
+        html[dir="rtl"] #darkModeToggle + div::after {
+            right: 2px !important;
+        }
+        html[dir="rtl"] #darkModeToggle:checked + div::after {
+            transform: translateX(-16px) !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="phone-frame">
+        
+        <!-- Header -->
+        <div class="p-4 bg-white border-b border-gray-200 header">
+            <h1 class="text-xl font-bold text-gray-800 text-center">مترجم زبان</h1>
+        </div>
+
+        <!-- Language Selectors & Swap -->
+        <div class="flex items-center justify-between p-4 bg-white border-b border-gray-100">
+            <!-- Source Language -->
+            <button id="sourceLangBtn" class="flex-1 flex items-center justify-center p-3 rounded-xl bg-gray-100 hover:bg-gray-200 transition text-sm font-semibold text-gray-700 shadow-sm">
+                <span id="sourceFlag" class="ml-2 rtl:mr-2 text-xl">🇮🇷</span>
+                <span id="sourceName">فارسی</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 mr-2 rtl:ml-2"></i>
+            </button>
+
+            <!-- Swap Button -->
+            <button id="swapLangsBtn" class="mx-3 p-2 rounded-full bg-blue-500 text-white hover:bg-blue-600 transition shadow-md">
+                <i data-lucide="refresh-cw" class="w-5 h-5 transform rotate-90"></i>
+            </button>
+
+            <!-- Target Language -->
+            <button id="targetLangBtn" class="flex-1 flex items-center justify-center p-3 rounded-xl bg-gray-100 hover:bg-gray-200 transition text-sm font-semibold text-gray-700 shadow-sm">
+                <span id="targetFlag" class="ml-2 rtl:mr-2 text-xl">🇺🇸</span>
+                <span id="targetName">انگلیسی</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 mr-2 rtl:ml-2"></i>
+            </button>
+        </div>
+
+        <!-- Translation Area (Main Content) -->
+        <main class="flex-grow p-4 space-y-4 bg-gray-50/70 backdrop-blur-sm">
+            
+            <!-- Source Input Card -->
+            <div id="sourceCard" class="card-container p-4 rounded-xl shadow-lg border-2 border-transparent">
+                <!-- Header: Language & Clear -->
+                <div class="flex justify-between items-center mb-2">
+                    <span id="sourceLangDisplay" class="text-xs font-semibold text-blue-600">فارسی</span>
+                    <button id="clearInputBtn" class="text-gray-400 hover:text-gray-600 transition">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                
+                <!-- Input Text Area -->
+                <textarea id="sourceInput" class="text-input-box text-gray-900" placeholder="متنی برای ترجمه وارد کنید..."></textarea>
+                
+                <!-- Footer: Microphone & Translate Button -->
+                <div class="flex justify-between items-center pt-2">
+                    <button id="micBtn" class="p-3 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition shadow-sm">
+                        <i data-lucide="mic" class="w-5 h-5"></i>
+                    </button>
+                    
+                    <button id="translateBtn" class="bg-orange-500 text-white font-bold py-3 px-8 rounded-full shadow-md hover:bg-orange-600 transition disabled:opacity-50">
+                        ترجمه
+                    </button>
+                </div>
+            </div>
+
+            <!-- Target Output Card -->
+            <div id="targetCard" class="card-container p-4 rounded-xl shadow-lg border-2 border-transparent" style="min-height: 180px;">
+                <!-- Header: Language & Speaker -->
+                <div class="flex justify-between items-center mb-2">
+                    <span id="targetLangDisplay" class="text-xs font-semibold text-gray-600">انگلیسی</span>
+                    <button id="speakerBtn" class="text-gray-400 hover:text-gray-600 transition" disabled>
+                        <i data-lucide="volume-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Output Text Area (Simulated) -->
+                <div id="targetOutput" class="text-input-box text-gray-700 overflow-auto cursor-default" style="min-height: 80px;" dir="ltr">
+                    ترجمه اینجا ظاهر می‌شود.
+                </div>
+
+                <!-- Loading/Error Message -->
+                <div id="messageArea" class="hidden text-sm pt-2"></div>
+
+                <!-- Footer: Action Icons -->
+                <div class="flex justify-end items-center pt-2 space-x-4 rtl:space-x-reverse border-t border-gray-100 mt-2 pt-3">
+                    <button id="copyBtn" class="text-gray-500 hover:text-blue-500 transition" disabled>
+                        <i data-lucide="copy" class="w-5 h-5"></i>
+                    </button>
+                    <button id="shareBtn" class="text-gray-500 hover:text-blue-500 transition" disabled>
+                        <i data-lucide="share" class="w-5 h-5"></i>
+                    </button>
+                    <button id="favoriteBtn" class="text-gray-500 hover:text-yellow-500 transition" disabled>
+                        <i id="actionStarIcon" data-lucide="star" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Navigation Bar (Footer) -->
+        <nav class="flex justify-around items-center h-16 bg-white border-t border-gray-200 sticky bottom-0 nav-bar">
+            <!-- 1. Settings Button (Active) -->
+            <div id="settingsNavBtn" class="nav-item flex flex-col items-center text-blue-600 cursor-pointer">
+                <i data-lucide="settings" class="w-6 h-6"></i>
+                <span class="text-xs mt-1 font-semibold">تنظیمات</span>
+            </div>
+            <!-- 2. Camera Button (Real) -->
+            <div id="cameraNavBtn" class="nav-item flex flex-col items-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                <i data-lucide="camera" class="w-6 h-6"></i>
+                <span class="text-xs mt-1">دوربین</span>
+            </div>
+            <!-- Active/Selected Translator Icon -->
+            <div class="flex flex-col items-center text-blue-600 cursor-pointer">
+                <div class="p-2 bg-blue-100 rounded-full">
+                    <i data-lucide="languages" class="w-6 h-6"></i>
+                </div>
+                <span class="text-xs mt-1 font-semibold">مترجم</span>
+            </div>
+            <!-- 3. History Button (Real) -->
+            <div id="historyNavBtn" class="nav-item flex flex-col items-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                <i data-lucide="history" class="w-6 h-6"></i>
+                <span class="text-xs mt-1">تاریخچه</span>
+            </div>
+            <!-- 4. Favorite Button (Real) -->
+            <div id="favoriteNavBtn" class="nav-item flex flex-col items-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
+                <i data-lucide="star" class="w-6 h-6"></i>
+                <span class="text-xs mt-1">علاقه‌مندی</span>
+            </div>
+        </nav>
+        
+        <!-- --- Modals --- -->
+
+        <!-- 1. Settings Modal (Center Overlay - Clean, Glassy Design) -->
+        <div id="settingsModal" class="modal-overlay">
+            <div class="modal-content-center">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">تنظیمات API و مدل</h2>
+                    <button id="closeSettingsModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-4 flex-grow overflow-y-auto space-y-6 text-gray-700 dark:text-gray-300">
+                    
+                    <!-- Theme Toggle (Stylish Switch) -->
+                    <div class="space-y-2 flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">حالت تاریک (Dark Mode)</label>
+                        <!-- New Switch Design (Fixed to prevent overflow) -->
+                        <label class="relative inline-flex items-center cursor-pointer toggle-container mr-2">
+                            <input type="checkbox" id="darkModeToggle" value="" class="sr-only peer">
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[3px] after:right-[3px] after:bg-white after:border after:border-gray-300 after:rounded-full after:h-[18px] after:w-[18px] after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                        </label>
+                    </div>
+                    
+                    <div class="space-y-2">
+                        <label for="openRouterKeyInput" class="block text-sm font-medium text-gray-700 dark:text-gray-300">کلید OpenRouter API</label>
+                        <input type="password" id="openRouterKeyInput" placeholder="کلید خود را اینجا وارد کنید (مثال: sk-or-v1-...)" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 transition">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">برای استفاده از ترجمه واقعی، به یک کلید API از OpenRouter نیاز دارید.</p>
+                    </div>
+        
+                    <!-- Model Selection Button (Opens Dedicated Modal) -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">مدل هوش مصنوعی انتخابی</label>
+                        <button id="openModelPickerBtn" class="w-full p-3 border border-gray-300 rounded-lg bg-white/50 backdrop-blur-sm appearance-none focus:ring-blue-500 focus:border-blue-500 transition flex justify-between items-center text-gray-800 dark:text-gray-200 shadow-sm hover:shadow-md">
+                            <span id="selectedModelDisplay" class="truncate font-medium">...مدل را انتخاب کنید</span>
+                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-500"></i>
+                        </button>
+                        <p id="modelStatus" class="text-xs text-red-500 dark:text-red-400"></p>
+                        <button id="fetchModelsBtn" class="w-full mt-2 bg-blue-500 text-white font-medium py-2 rounded-lg hover:bg-blue-600 transition">
+                            بارگیری لیست مدل‌ها
+                        </button>
+                    </div>
+        
+                    <!-- Tone Selection Button (Opens Dedicated Modal) -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">لحن ترجمه</label>
+                        <button id="openTonePickerBtn" class="w-full p-3 border border-gray-300 rounded-lg bg-white/50 backdrop-blur-sm appearance-none focus:ring-blue-500 focus:border-blue-500 transition flex justify-between items-center text-gray-800 dark:text-gray-200 shadow-sm hover:shadow-md">
+                            <span id="selectedToneDisplay" class="font-medium">...لحن را انتخاب کنید</span>
+                            <i data-lucide="chevron-right" class="w-5 h-5 text-gray-500"></i>
+                        </button>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">این لحن در ترجمه نهایی شما اعمال خواهد شد.</p>
+                    </div>
+        
+                    <!-- Credit Line - Small and Light -->
+                    <div class="text-center pt-4 border-t border-gray-200 dark:border-gray-600">
+                        <p class="text-xs text-gray-500 dark:text-gray-400 italic">ایده و تولید: احسان شمسی</p>
+                    </div>
+                </div>
+
+                <!-- Modal Footer (Fixed at Bottom) -->
+                <div class="p-4 border-t border-gray-200 sticky bottom-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                    <button id="saveSettingsBtn" class="w-full bg-green-500 text-white font-bold py-3 rounded-full shadow-lg hover:bg-green-600 transition">
+                        ذخیره تنظیمات
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 2. Language Picker Modal (Center Overlay - Clean, Glassy Design) -->
+        <div id="languageModal" class="modal-overlay">
+            <div class="modal-content-center">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                    <h2 id="languageModalTitle" class="text-lg font-bold text-gray-800 dark:text-gray-200">انتخاب زبان</h2>
+                    <button id="closeLanguageModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body (Language List) -->
+                <div id="languageListContainer" class="flex-grow overflow-y-auto">
+                    <!-- Languages will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. Model Picker Modal (Center Overlay) -->
+        <div id="modelPickerModal" class="modal-overlay">
+            <div class="modal-content-center">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">انتخاب مدل هوش مصنوعی</h2>
+                    <button id="closeModelPickerModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body (Model List) -->
+                <div id="modelListContainer" class="flex-grow overflow-y-auto">
+                    <p class="p-4 text-center text-gray-500 dark:text-gray-400">لطفاً ابتدا مدل‌ها را در صفحه تنظیمات بارگیری کنید.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. Tone Picker Modal (Center Overlay) -->
+        <div id="tonePickerModal" class="modal-overlay">
+            <div class="modal-content-center">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">انتخاب لحن ترجمه</h2>
+                    <button id="closeTonePickerModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body (Tone List) -->
+                <div id="toneListContainer" class="flex-grow overflow-y-auto">
+                    <!-- Tones will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+
+        <!-- 5. Camera Modal (Bottom Sheet - Drag Down to Close) -->
+        <div id="cameraModal" class="modal-overlay">
+            <div id="cameraContent" class="modal-content-bottom-sheet !p-0 pb-0">
+                <!-- Drag Handle -->
+                <div class="p-2 pt-3 flex justify-center sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                    <div class="drag-handle"></div>
+                </div>
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">ترجمه دوربین</h2>
+                    <button id="closeCameraModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                <!-- Modal Body -->
+                <div class="flex-grow flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-800 text-center overflow-y-auto">
+                    <div class="relative w-full max-w-sm aspect-video rounded-xl overflow-hidden bg-gray-300 dark:bg-gray-700 shadow-xl">
+                        <video id="cameraFeed" class="w-full h-full object-cover" autoplay playsinline></video>
+                        <p id="cameraStatus" class="absolute inset-0 flex items-center justify-center text-gray-600 dark:text-gray-400 font-medium">دسترسی به دوربین...</p>
+                    </div>
+                    
+                    <canvas id="cameraCanvas" class="hidden"></canvas>
+                    
+                    <button id="captureBtn" class="bg-blue-500 text-white font-bold py-3 px-8 rounded-full mt-6 shadow-lg hover:bg-blue-600 transition disabled:opacity-50">
+                        گرفتن عکس و ترجمه
+                    </button>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">ترجمه متن از عکس (شبیه‌سازی OCR)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. History Modal (Bottom Sheet - Drag Down to Close) -->
+        <div id="historyModal" class="modal-overlay">
+            <div id="historyContent" class="modal-content-bottom-sheet">
+                <!-- Drag Handle -->
+                <div class="p-2 pt-3 flex justify-center sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                    <div class="drag-handle"></div>
+                </div>
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">تاریخچه ترجمه‌ها</h2>
+                    <div class="flex items-center space-x-3 rtl:space-x-reverse">
+                        <button id="clearHistoryBtn" class="text-red-500 hover:text-red-600 text-sm font-medium disabled:opacity-50">
+                             پاک کردن همه
+                        </button>
+                        <button id="closeHistoryModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Body (History List) -->
+                <div id="historyListContainer" class="flex-grow overflow-y-auto">
+                    <!-- History items will be rendered here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 7. Favorites Modal (Bottom Sheet - Drag Down to Close) -->
+        <div id="favoritesModal" class="modal-overlay">
+            <div id="favoritesContent" class="modal-content-bottom-sheet">
+                <!-- Drag Handle -->
+                <div class="p-2 pt-3 flex justify-center sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                    <div class="drag-handle"></div>
+                </div>
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">علاقه‌مندی‌های من</h2>
+                    <button id="closeFavoritesModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body (Favorites List) -->
+                <div id="favoritesListContainer" class="flex-grow overflow-y-auto">
+                    <!-- Favorite items will be rendered here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Message Modal (For offline or API errors) -->
+        <div id="globalMessageModal" class="modal-overlay">
+            <div class="modal-content-center bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 p-6 shadow-xl text-center">
+                <i data-lucide="cloud-off" class="w-10 h-10 mx-auto mb-4 text-red-600 dark:text-red-400"></i>
+                <h3 id="globalMessageTitle" class="text-xl font-bold mb-2"></h3>
+                <p id="globalMessageContent" class="text-sm mb-4"></p>
+                <button id="closeGlobalMessageModal" class="bg-red-500 text-white font-medium py-2 px-6 rounded-full hover:bg-red-600 transition">
+                    بستن
+                </button>
+            </div>
+        </div>
+
+        <!-- 8. Confirmation Modal (Centered, Glassy Design) -->
+        <div id="confirmModal" class="modal-overlay">
+            <div class="modal-content-center">
+                <!-- Modal Header -->
+                <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">تایید حذف</h2>
+                    <button id="closeConfirmModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="p-6 text-center text-gray-700 dark:text-gray-300 space-y-4">
+                    <i data-lucide="alert-triangle" class="w-12 h-12 mx-auto text-yellow-500"></i>
+                    <p id="confirmMessage" class="text-sm">آیا مطمئن هستید؟</p>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="p-4 border-t border-gray-200 sticky bottom-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70 flex space-x-3 rtl:space-x-reverse">
+                    <button id="cancelConfirmBtn" class="flex-1 bg-gray-300 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-400 transition dark:bg-gray-600 dark:text-gray-200 dark:hover:bg-gray-500">
+                        انصراف
+                    </button>
+                    <button id="confirmDeleteBtn" class="flex-1 bg-red-500 text-white font-medium py-3 rounded-lg hover:bg-red-600 transition shadow-sm">
+                        حذف
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // --- Data and Constants ---
+        const openRouterApiUrl = 'https://openrouter.ai/api/v1/chat/completions';
+        const modelsApiUrl = 'https://openrouter.ai/api/v1/models';
+
+        const translationTones = [
+            { code: 'professional', name: 'حرفه‌ای و رسمی' }, { code: 'casual', name: 'دوستانه و روزمره' },
+            { code: 'academic', name: 'آکادمیک و علمی' }, { code: 'technical', name: 'فنی و تخصصی' },
+            { code: 'humorous', name: 'طنزآمیز و شوخ' }, { code: 'serious', name: 'جدی و محتاطانه' },
+            { code: 'encouraging', name: 'امیدوارکننده و انگیزشی' }, { code: 'critical', name: 'انتقادی و تحلیلی' },
+            { code: 'historical', name: 'لحن تاریخی/کهن' }, { code: 'poetic', name: 'شاعرانه و ادبی' },
+            { code: 'marketing', name: 'تبلیغاتی و بازاریابی' }, { code: 'journalistic', name: 'خبری و ژورنالیستی' },
+            { code: 'legal', name: 'حقوقی و قانونی' }, { code: 'sarcastic', name: 'طعنه‌آمیز (با احتیاط)' },
+            { code: 'neutral', name: 'بی‌طرف و خنثی' }, { code: 'persuasive', name: 'متقاعدکننده و اقناعی' },
+            { code: 'narrative', name: 'روایی و داستانی' }, { code: 'simple', name: 'ساده و مختصر' },
+            { code: 'enthusiastic', name: 'مشتاق و هیجان‌زده' }, { code: 'calm', name: 'آرام و تسکین‌دهنده' },
+        ];
+
+        const languages = [
+            { code: 'fa', name: 'فارسی', flag: '🇮🇷' }, { code: 'en', name: 'انگلیسی', flag: '🇺🇸' },
+            { code: 'es', name: 'اسپانیایی', flag: '🇪🇸' }, { code: 'fr', name: 'فرانسوی', flag: '🇫🇷' },
+            { code: 'de', name: 'آلمانی', flag: '🇩🇪' }, { code: 'it', name: 'ایتالیایی', flag: '🇮🇹' },
+            { code: 'pt', name: 'پرتغالی', flag: '🇵🇹' }, { code: 'ru', name: 'روسی', flag: '🇷🇺' },
+            { code: 'zh', name: 'چینی (ماندارین)', flag: '🇨🇳' }, { code: 'ja', name: 'ژاپنی', flag: '🇯🇵' },
+            { code: 'ko', name: 'کره‌ای', flag: '🇰🇷' }, { code: 'ar', name: 'عربی', flag: '🇸🇦' },
+            { code: 'hi', name: 'هندی', flag: '🇮🇳' }, { code: 'tr', name: 'ترکی', flag: '🇹🇷' },
+            { code: 'pl', name: 'لهستانی', flag: '🇵🇱' }, { code: 'nl', name: 'هلندی', flag: '🇳🇱' },
+            { code: 'sv', name: 'سوئدی', flag: '🇸🇪' }, { code: 'el', name: 'یونانی', flag: '🇬🇷' },
+            { code: 'th', name: 'تایلندی', flag: '🇹🇭' }, { code: 'vi', name: 'ویتنامی', flag: '🇻🇳' },
+            { code: 'id', name: 'اندونزیایی', flag: '🇮🇩' }, { code: 'ms', name: 'مالایی', flag: '🇲🇾' },
+            { code: 'ro', name: 'رومانیایی', flag: '🇷🇴' }, { code: 'hu', name: 'مجاری', flag: '🇭🇺' },
+            { code: 'cs', name: 'چکی', flag: '🇨🇿' }, { code: 'da', name: 'دانمارکی', flag: '🇩🇰' },
+            { code: 'fi', name: 'فنلاندی', flag: '🇫🇮' }, { code: 'no', name: 'نروژی', flag: '🇳🇴' },
+            { code: 'he', name: 'عبری', flag: '🇮🇱' }, { code: 'uk', name: 'اوکراینی', flag: '🇺🇦' },
+            { code: 'bg', name: 'بلغاری', flag: '🇧🇬' }, { code: 'hr', name: 'کرواتی', flag: '🇭🇷' },
+            { code: 'sk', name: 'اسلواکی', flag: '🇸🇰' }, { code: 'lt', name: 'لیتوانیایی', flag: '🇱🇹' },
+            { code: 'lv', name: 'لتونیایی', flag: '🇱🇻' }, { code: 'et', name: 'استونیایی', flag: '🇪🇪' },
+            { code: 'sq', name: 'آلبانیایی', flag: '🇦🇱' }, { code: 'sr', name: 'صربی', flag: '🇷🇸' },
+            { code: 'ka', name: 'گرجی', flag: '🇬🇪' }, { code: 'hy', name: 'ارمنی', flag: '🇦🇲' },
+            { code: 'bn', name: 'بنگالی', flag: '🇧🇩' }, { code: 'pa', name: 'پنجابی', flag: '🇮🇳' },
+            { code: 'te', name: 'تلوگو', flag: '🇮🇳' }, { code: 'ta', name: 'تامیلی', flag: '🇮🇳' },
+            { code: 'mr', name: 'مراتی', flag: '🇮🇳' }, { code: 'gu', name: 'گجراتی', flag: '🇮🇳' },
+            { code: 'kn', name: 'کانادا', flag: '🇮🇳' }, { code: 'ml', name: 'مالایالام', flag: '🇮🇳' },
+            { code: 'tl', name: 'تاگالوگ', flag: '🇵🇭' }
+        ];
+
+        let sourceLang = languages[0];
+        let targetLang = languages[1];
+        let isSelectingSource = true;
+        let activeStream = null; 
+
+        // Local Storage Managed State
+        let openRouterKey = '';
+        let selectedModel = '';
+        let selectedToneCode = '';
+        let history = []; 
+        let currentTheme = 'light';
+        
+        let availableModels = [];
+
+        // --- DOM Elements ---
+        const translateBtn = document.getElementById('translateBtn');
+        const messageArea = document.getElementById('messageArea');
+        const sourceInput = document.getElementById('sourceInput');
+        const targetOutput = document.getElementById('targetOutput');
+        
+        // Modals
+        const settingsModal = document.getElementById('settingsModal');
+        const languageModal = document.getElementById('languageModal');
+        const cameraModal = document.getElementById('cameraModal');
+        const historyModal = document.getElementById('historyModal');
+        const favoritesModal = document.getElementById('favoritesModal');
+        const modelPickerModal = document.getElementById('modelPickerModal');
+        const tonePickerModal = document.getElementById('tonePickerModal');
+        const globalMessageModal = document.getElementById('globalMessageModal');
+        const globalMessageTitle = document.getElementById('globalMessageTitle');
+        const globalMessageContent = document.getElementById('globalMessageContent');
+        
+        // Confirmation Modal Elements
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmMessage = document.getElementById('confirmMessage');
+        const closeConfirmModal = document.getElementById('closeConfirmModal');
+        const cancelConfirmBtn = document.getElementById('cancelConfirmBtn');
+        const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+        
+        let resolveConfirm; // To handle promise resolution
+        
+        // Camera Elements
+        const cameraFeed = document.getElementById('cameraFeed');
+        const cameraCanvas = document.getElementById('cameraCanvas');
+        const cameraStatus = document.getElementById('cameraStatus');
+        const captureBtn = document.getElementById('captureBtn');
+        
+        // History/Favorites Containers
+        const historyListContainer = document.getElementById('historyListContainer');
+        const favoritesListContainer = document.getElementById('favoritesListContainer');
+        const modelListContainer = document.getElementById('modelListContainer');
+        const toneListContainer = document.getElementById('toneListContainer');
+
+        // Settings Elements
+        const openRouterKeyInput = document.getElementById('openRouterKeyInput');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const fetchModelsBtn = document.getElementById('fetchModelsBtn');
+        const openModelPickerBtn = document.getElementById('openModelPickerBtn');
+        const openTonePickerBtn = document.getElementById('openTonePickerBtn');
+        const selectedModelDisplay = document.getElementById('selectedModelDisplay');
+        const selectedToneDisplay = document.getElementById('selectedToneDisplay');
+        const modelStatus = document.getElementById('modelStatus');
+
+
+        // --- Theme Management ---
+        function applyTheme(theme) {
+            currentTheme = theme;
+            document.documentElement.classList.toggle('dark', theme === 'dark');
+            darkModeToggle.checked = theme === 'dark';
+            localStorage.setItem('theme', theme);
+        }
+        
+        // Toggle Dark Mode
+        darkModeToggle.addEventListener('change', (e) => {
+            const newTheme = e.target.checked ? 'dark' : 'light';
+            applyTheme(newTheme);
+        });
+
+        // --- Persistence Functions ---
+        
+        function loadData() {
+            // Load theme first
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            applyTheme(savedTheme);
+
+            // Load settings
+            openRouterKey = localStorage.getItem('openRouterKey') || '';
+            selectedModel = localStorage.getItem('selectedModel') || '';
+            selectedToneCode = localStorage.getItem('selectedToneCode') || translationTones[0].code;
+            
+            // Load history
+            try {
+                history = JSON.parse(localStorage.getItem('translationHistory') || '[]');
+            } catch (e) {
+                console.error("Error loading history from localStorage:", e);
+                history = [];
+            }
+        }
+
+        function saveHistory() {
+            localStorage.setItem('translationHistory', JSON.stringify(history));
+        }
+
+        // --- Utility Functions ---
+
+        /**
+         * Toggles the visibility of any full-screen modal.
+         * Note: Since we have two types of modals (center and bottom-sheet), we check which one is used.
+         * @param {HTMLElement} modalElement - The modal to show/hide.
+         * @param {boolean} show - True to show, false to hide.
+         */
+        function toggleModal(modalElement, show) {
+            const content = modalElement.querySelector('.modal-content-center') || modalElement.querySelector('.modal-content-bottom-sheet');
+            
+            if (show) {
+                modalElement.style.display = 'flex';
+                modalElement.offsetWidth;
+                modalElement.classList.add('active');
+            } else {
+                modalElement.classList.remove('active');
+                
+                // Wait for transition end before hiding the overlay
+                const duration = content && content.classList.contains('modal-content-bottom-sheet') ? 400 : 300;
+                setTimeout(() => modalElement.style.display = 'none', duration);
+            }
+        }
+
+        // Confirmation Modal Logic
+        function showConfirm(message) {
+            return new Promise((resolve) => {
+                resolveConfirm = resolve;
+                confirmMessage.textContent = message;
+                toggleModal(confirmModal, true);
+            });
+        }
+
+        function handleConfirm(shouldDelete) {
+            toggleModal(confirmModal, false);
+            if (resolveConfirm) {
+                resolveConfirm(shouldDelete);
+                resolveConfirm = null;
+            }
+        }
+
+        function showGlobalMessage(title, content) {
+            globalMessageTitle.textContent = title;
+            globalMessageContent.textContent = content;
+            toggleModal(globalMessageModal, true);
+        }
+        
+        function showMessage(type, content, targetEl = messageArea) {
+            // ... (showMessage logic remains the same) ...
+            targetEl.classList.remove('hidden');
+            let baseClasses = 'p-3 rounded-lg text-sm transition-all duration-300';
+            let icon = '';
+            let styleClasses = '';
+            
+            if (type === 'error') {
+                styleClasses = 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
+                icon = '<i data-lucide="alert-triangle" class="w-4 h-4 inline ml-2 rtl:mr-2"></i>';
+            } else if (type === 'loading') {
+                styleClasses = 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300';
+                icon = '<i data-lucide="loader" class="w-4 h-4 inline ml-2 rtl:mr-2 animate-spin"></i>';
+            } else if (type === 'success') {
+                styleClasses = 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
+                icon = '<i data-lucide="check-circle" class="w-4 h-4 inline ml-2 rtl:mr-2"></i>';
+            }
+
+            targetEl.className = baseClasses + ' ' + styleClasses;
+            targetEl.innerHTML = icon + content;
+            lucide.createIcons();
+            if (targetEl === messageArea) setTimeout(clearMessage, 5000);
+        }
+
+        function clearMessage() {
+            messageArea.classList.add('hidden');
+            messageArea.innerHTML = '';
+        }
+
+        function getLanguageByCode(code) {
+            return languages.find(l => l.code === code) || { code: code, name: code, flag: '🌐' };
+        }
+
+        function getToneName(code) {
+            return translationTones.find(t => t.code === code)?.name || 'عادی';
+        }
+        
+        function getToneCode(name) {
+            return translationTones.find(t => t.name === name)?.code || translationTones[0].code;
+        }
+
+        function updateUI() {
+            // Update language selection buttons
+            document.getElementById('sourceFlag').textContent = sourceLang.flag;
+            document.getElementById('sourceName').textContent = sourceLang.name;
+            document.getElementById('targetFlag').textContent = targetLang.flag;
+            document.getElementById('targetName').textContent = targetLang.name;
+
+            // Update language display inside cards
+            document.getElementById('sourceLangDisplay').textContent = sourceLang.name;
+            document.getElementById('targetLangDisplay').textContent = targetLang.name;
+
+            // Set text direction based on language code
+            const isSourceRTL = ['fa', 'ar', 'he'].includes(sourceLang.code);
+            sourceInput.setAttribute('dir', isSourceRTL ? 'rtl' : 'ltr');
+
+            const isTargetRTL = ['fa', 'ar', 'he'].includes(targetLang.code);
+            targetOutput.setAttribute('dir', isTargetRTL ? 'rtl' : 'ltr');
+
+            // Update settings buttons display
+            selectedModelDisplay.textContent = selectedModel || '...مدل را انتخاب کنید';
+            selectedToneDisplay.textContent = getToneName(selectedToneCode);
+            
+            populateToneSelect();
+        }
+        
+        // --- History/Favorites Rendering ---
+
+        function renderHistoryItem(item, container) {
+            const sourceLangObj = getLanguageByCode(item.sourceLang.code);
+            const targetLangObj = getLanguageByCode(item.targetLang.code);
+            const toneName = getToneName(item.tone);
+
+            const div = document.createElement('div');
+            div.className = 'history-item p-4 space-y-2 cursor-pointer text-gray-800 dark:text-gray-200 relative group';
+            div.innerHTML = `
+                <div class="flex justify-between items-start text-sm font-medium">
+                    <div class="flex items-center space-x-1 rtl:space-x-reverse">
+                        <span>${sourceLangObj.flag} ${sourceLangObj.name}</span>
+                        <i data-lucide="arrow-left" class="w-3 h-3 mx-1"></i>
+                        <span>${targetLangObj.flag} ${targetLangObj.name}</span>
+                    </div>
+                    <div class="flex items-center space-x-2 rtl:space-x-reverse">
+                        <!-- Favorite Toggle -->
+                        <button class="favorite-toggle text-xl" data-id="${item.id}">
+                            <i data-lucide="star" class="w-5 h-5 transition-colors ${item.isFavorite ? 'text-yellow-500 fill-yellow-500' : 'text-gray-400 dark:text-gray-500'}"></i>
+                        </button>
+                        <!-- Delete Button -->
+                        <button class="delete-history-btn text-red-500 hover:text-red-700 transition" data-id="${item.id}">
+                             <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">${item.input.substring(0, 80)}${item.input.length > 80 ? '...' : ''}</p>
+                <p class="text-base font-bold">${item.output.substring(0, 80)}${item.output.length > 80 ? '...' : ''}</p>
+                <p class="text-xs text-blue-500 dark:text-blue-400">لحن: ${toneName}</p>
+            `;
+            
+            div.addEventListener('click', (e) => {
+                if (!e.target.closest('.favorite-toggle') && !e.target.closest('.delete-history-btn')) {
+                    sourceInput.value = item.input;
+                    targetOutput.textContent = item.output;
+                    sourceLang = item.sourceLang;
+                    targetLang = item.targetLang;
+                    updateUI();
+                    translateBtn.disabled = false;
+                    
+                    const parentModal = container.closest('.modal-overlay');
+                    if (parentModal) toggleModal(parentModal, false);
+
+                    showMessage('success', 'ترجمه به صفحه اصلی منتقل شد.');
+                    updateFavoriteIcon(item); 
+                }
+            });
+            
+            container.appendChild(div);
+            lucide.createIcons();
+        }
+
+        function renderHistory() {
+            historyListContainer.innerHTML = '';
+            const sortedHistory = history.slice().sort((a, b) => b.id - a.id);
+            if (sortedHistory.length === 0) {
+                historyListContainer.innerHTML = '<p class="p-4 text-center text-gray-500 dark:text-gray-400">هیچ ترجمه‌ای در تاریخچه وجود ندارد.</p>';
+                document.getElementById('clearHistoryBtn').disabled = true;
+            } else {
+                sortedHistory.forEach(item => renderHistoryItem(item, historyListContainer));
+                document.getElementById('clearHistoryBtn').disabled = false;
+            }
+            attachHistoryActionListeners();
+        }
+
+        function renderFavorites() {
+            favoritesListContainer.innerHTML = '';
+            const favorites = history.filter(item => item.isFavorite).sort((a, b) => b.id - a.id);
+            if (favorites.length === 0) {
+                favoritesListContainer.innerHTML = '<p class="p-4 text-center text-gray-500 dark:text-gray-400">هیچ آیتمی به لیست علاقه‌مندی‌ها اضافه نشده است.</p>';
+            } else {
+                favorites.forEach(item => renderHistoryItem(item, favoritesListContainer));
+            }
+            attachHistoryActionListeners();
+        }
+        
+        async function deleteHistoryItem(id) {
+            const confirmed = await showConfirm('آیا مطمئن هستید که می‌خواهید این آیتم را حذف کنید؟');
+            if (confirmed) {
+                const initialLength = history.length;
+                history = history.filter(item => item.id !== parseInt(id));
+                if (history.length < initialLength) {
+                    saveHistory();
+                    renderHistory();
+                    renderFavorites();
+                    showMessage('success', 'آیتم ترجمه حذف شد.');
+                }
+            }
+        }
+
+        function toggleFavorite(id) {
+            const item = history.find(i => i.id === parseInt(id));
+            if (item) {
+                item.isFavorite = !item.isFavorite;
+                saveHistory();
+                showMessage('success', item.isFavorite ? 'به علاقه‌مندی‌ها اضافه شد.' : 'از علاقه‌مندی‌ها حذف شد.');
+                
+                if (historyModal.classList.contains('active')) renderHistory();
+                if (favoritesModal.classList.contains('active')) renderFavorites();
+            }
+        }
+        
+        function attachHistoryActionListeners() {
+            // Favorite Toggle
+            document.querySelectorAll('.favorite-toggle').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation(); 
+                    const id = e.currentTarget.getAttribute('data-id');
+                    toggleFavorite(id);
+                };
+            });
+            // Delete Item
+            document.querySelectorAll('.delete-history-btn').forEach(btn => {
+                btn.onclick = (e) => {
+                    e.stopPropagation();
+                    const id = e.currentTarget.getAttribute('data-id');
+                    deleteHistoryItem(id);
+                };
+            });
+        }
+        
+        // --- Camera Logic --- (Unchanged)
+        function startCamera() {
+            if (activeStream) return;
+            cameraStatus.textContent = 'در حال دسترسی به دوربین...';
+            
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    activeStream = stream;
+                    cameraFeed.srcObject = stream;
+                    cameraFeed.onloadedmetadata = () => {
+                        cameraFeed.play();
+                        cameraStatus.textContent = 'آماده عکس‌برداری.';
+                        captureBtn.disabled = false;
+                    };
+                })
+                .catch(err => {
+                    console.error("Camera access denied:", err);
+                    cameraStatus.textContent = 'دسترسی به دوربین مسدود شد. لطفاً مجوز را تایید کنید.';
+                    captureBtn.disabled = true;
+                });
+        }
+
+        function stopCamera() {
+            if (activeStream) {
+                activeStream.getTracks().forEach(track => track.stop());
+                activeStream = null;
+                cameraFeed.srcObject = null;
+            }
+        }
+        
+        captureBtn.addEventListener('click', () => {
+            if (!activeStream) return;
+            
+            const context = cameraCanvas.getContext('2d');
+            cameraCanvas.width = cameraFeed.videoWidth;
+            cameraCanvas.height = cameraFeed.videoHeight;
+            context.drawImage(cameraFeed, 0, 0, cameraCanvas.width, cameraCanvas.height);
+            
+            const simulatedText = "The quick brown fox jumps over the lazy dog. This is a simulated text from the camera image.";
+            
+            stopCamera();
+            toggleModal(cameraModal, false);
+            
+            sourceInput.value = simulatedText;
+            translateBtn.disabled = false;
+            showMessage('loading', 'متن از دوربین دریافت شد. در حال ترجمه...');
+            
+            fetchTranslation(simulatedText, sourceLang.code, targetLang.code);
+        });
+
+        // --- Settings Management ---
+
+        function saveSettings() {
+            openRouterKey = openRouterKeyInput.value.trim();
+            
+            localStorage.setItem('openRouterKey', openRouterKey);
+            localStorage.setItem('selectedModel', selectedModel);
+            localStorage.setItem('selectedToneCode', selectedToneCode);
+
+            toggleModal(settingsModal, false);
+            
+            showMessage('success', 'تنظیمات API، مدل و لحن با موفقیت ذخیره شد.');
+            updateUI();
+        }
+
+        // --- Model and Tone Population ---
+        
+        function populateToneSelect() {
+            toneListContainer.innerHTML = '';
+            translationTones.forEach(tone => {
+                const div = document.createElement('div');
+                div.className = `picker-item flex items-center justify-between ${tone.code === selectedToneCode ? 'bg-blue-50 dark:bg-blue-900/50' : ''}`;
+                div.innerHTML = `
+                    <span class="text-base font-medium">${tone.name}</span>
+                    ${tone.code === selectedToneCode ? '<i data-lucide="check" class="w-5 h-5 text-blue-600"></i>' : ''}
+                `;
+                div.addEventListener('click', () => handleToneSelection(tone));
+                toneListContainer.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+        
+        function handleToneSelection(tone) {
+            selectedToneCode = tone.code;
+            localStorage.setItem('selectedToneCode', selectedToneCode);
+            selectedToneDisplay.textContent = tone.name;
+            toggleModal(tonePickerModal, false);
+            populateToneSelect(); 
+        }
+        
+        function updateModelSelect(models) {
+            modelListContainer.innerHTML = '';
+            
+            const groupedModels = models.reduce((acc, model) => {
+                const parts = model.id.split('/');
+                let provider = parts.length > 1 ? parts[0] : 'سایر مدل‌ها';
+                provider = provider.toUpperCase().replace('-', ' ').replace('MISTRALAI', 'Mistral AI').replace('GOOGLE', 'Google').replace('ANTHROPIC', 'Anthropic').replace('OPENAI', 'OpenAI');
+                
+                if (!acc[provider]) {
+                    acc[provider] = [];
+                }
+                acc[provider].push(model);
+                return acc;
+            }, {});
+
+            const providers = Object.keys(groupedModels).sort();
+
+            if (providers.length === 0) {
+                modelListContainer.innerHTML = '<p class="p-4 text-center text-gray-500 dark:text-gray-400">مدلی یافت نشد.</p>';
+                return;
+            }
+            
+            providers.forEach(provider => {
+                const groupTitle = document.createElement('h3');
+                groupTitle.className = 'p-4 pt-6 text-sm font-bold text-gray-600 dark:text-gray-400 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70 z-10';
+                groupTitle.textContent = provider;
+                modelListContainer.appendChild(groupTitle);
+                
+                groupedModels[provider].sort((a, b) => a.id.localeCompare(b.id)).forEach(model => {
+                    const div = document.createElement('div');
+                    div.className = `picker-item text-xs ${model.id === selectedModel ? 'bg-blue-50 dark:bg-blue-900/50' : ''}`;
+                    div.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <span class="font-mono text-sm">${model.id}</span>
+                            ${model.id === selectedModel ? '<i data-lucide="check" class="w-5 h-5 text-blue-600"></i>' : ''}
+                        </div>
+                    `;
+                    div.addEventListener('click', () => handleModelSelection(model.id));
+                    modelListContainer.appendChild(div);
+                });
+            });
+
+            lucide.createIcons();
+        }
+        
+        function handleModelSelection(modelId) {
+            selectedModel = modelId;
+            localStorage.setItem('selectedModel', selectedModel);
+            selectedModelDisplay.textContent = modelId;
+            toggleModal(modelPickerModal, false);
+            updateModelSelect(availableModels); 
+        }
+
+
+        async function fetchOpenRouterModels() {
+            if (!openRouterKeyInput.value.trim()) {
+                showMessage('error', 'لطفاً ابتدا کلید OpenRouter API را وارد کنید.', modelStatus);
+                return;
+            }
+
+            fetchModelsBtn.disabled = true;
+            fetchModelsBtn.textContent = 'در حال بارگیری...';
+            modelStatus.textContent = 'در حال ارتباط با OpenRouter...';
+            modelStatus.classList.remove('text-red-500', 'text-green-500');
+
+            const currentKey = openRouterKeyInput.value.trim();
+
+            try {
+                const response = await fetch(modelsApiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${currentKey}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                availableModels = data.data; 
+
+                const totalModels = availableModels.length;
+                if (totalModels > 0) {
+                    modelStatus.textContent = ` ${totalModels} مدل بارگیری شد. آماده انتخاب هستید.`;
+                    modelStatus.classList.remove('text-red-500');
+                    modelStatus.classList.add('text-green-500');
+                    openModelPickerBtn.disabled = false;
+                } else {
+                    modelStatus.textContent = 'مدلی یافت نشد.';
+                    modelStatus.classList.remove('text-green-500');
+                    modelStatus.classList.add('text-red-500');
+                    openModelPickerBtn.disabled = true;
+                }
+                
+            } catch (error) {
+                console.error("Error fetching models:", error);
+                modelStatus.textContent = `خطا در بارگیری مدل‌ها: ${error.message}. کلید API خود را بررسی کنید.`;
+                modelStatus.classList.remove('text-green-500');
+                modelStatus.classList.add('text-red-500');
+            } finally {
+                fetchModelsBtn.disabled = false;
+                fetchModelsBtn.textContent = 'بارگیری لیست مدل‌ها';
+            }
+        }
+        
+        // --- Core Translation Logic ---
+        async function fetchTranslation(text, sourceCode, targetCode) {
+            // 1. Check internet connection
+            if (!navigator.onLine) {
+                showGlobalMessage(
+                    'بدون اتصال به اینترنت',
+                    'برای انجام ترجمه آنلاین، لطفاً اتصال خود را به اینترنت برقرار کنید.'
+                );
+                translateBtn.disabled = false;
+                return;
+            }
+
+            // 2. Check API keys
+            if (!openRouterKey || !selectedModel) {
+                showMessage('error', 'لطفاً کلید OpenRouter API و مدل انتخابی را در **تنظیمات** وارد و ذخیره کنید تا ترجمه واقعی فعال شود.');
+                targetOutput.textContent = 'لطفاً برای فعال‌سازی ترجمه واقعی، کلید API و مدل خود را در بخش تنظیمات وارد نمایید.';
+                translateBtn.disabled = false;
+                return;
+            }
+
+            translateBtn.disabled = true;
+            targetOutput.textContent = '';
+            clearMessage();
+            
+            const selectedTone = getToneName(selectedToneCode);
+            showMessage('loading', `در حال ترجمه با لحن **${selectedTone}** توسط مدل ${selectedModel}...`);
+            
+            document.getElementById('copyBtn').disabled = document.getElementById('shareBtn').disabled = document.getElementById('favoriteBtn').disabled = true;
+
+            const sourceName = getLanguageByCode(sourceCode).name;
+            const targetName = getLanguageByCode(targetCode).name;
+
+            const systemPrompt = `You are a professional language translator. Your task is to accurately translate the provided text. The source language is ${sourceName} (${sourceCode}), and the target language is ${targetName} (${targetCode}). The desired tone for the output is: "${selectedTone}". Respond ONLY with the translated text. Do not add any explanation, greetings, or extra commentary.`;
+
+            const payload = {
+                model: selectedModel,
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: text }
+                ],
+                temperature: 0.5
+            };
+
+            const maxRetries = 3;
+            let currentDelay = 1000;
+            
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(openRouterApiUrl, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${openRouterKey}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 429 && i < maxRetries - 1) {
+                            await new Promise(resolve => setTimeout(resolve, currentDelay));
+                            currentDelay *= 2;
+                            continue;
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    const translatedText = result.choices?.[0]?.message?.content || 'خطا در دریافت ترجمه.';
+                    
+                    const newEntry = {
+                        id: Date.now(),
+                        input: text.trim(),
+                        output: translatedText.trim(),
+                        sourceLang: sourceLang,
+                        targetLang: targetLang,
+                        tone: selectedToneCode,
+                        model: selectedModel,
+                        timestamp: new Date().toISOString(),
+                        isFavorite: false
+                    };
+                    history.unshift(newEntry);
+                    saveHistory();
+                    
+                    targetOutput.textContent = translatedText.trim();
+                    clearMessage();
+                    
+                    document.getElementById('copyBtn').disabled = document.getElementById('shareBtn').disabled = false;
+                    translateBtn.disabled = false;
+                    updateFavoriteIcon(newEntry);
+                    
+                    return;
+
+                } catch (error) {
+                    console.error("Translation API Error:", error);
+                    let displayError = error.message.includes('401') ? 
+                        'خطای احراز هویت (401). کلید API را بررسی کنید.' : 
+                        'خطا در ارتباط با OpenRouter. لطفاً دوباره تلاش کنید.';
+                    showMessage('error', displayError);
+                    break;
+                }
+            }
+
+            translateBtn.disabled = false;
+        }
+        
+        function updateFavoriteIcon(item) {
+            const icon = document.getElementById('actionStarIcon');
+            const isFavoriteNow = item.isFavorite;
+            icon.classList.toggle('fill-yellow-500', isFavoriteNow);
+            icon.classList.toggle('text-yellow-500', isFavoriteNow);
+            icon.classList.toggle('text-gray-500', !isFavoriteNow);
+            document.getElementById('favoriteBtn').disabled = false;
+            lucide.createIcons();
+        }
+
+        // --- Language Modal Logic ---
+        function openLanguageModal(isSource) {
+            isSelectingSource = isSource;
+            document.getElementById('languageModalTitle').textContent = isSource ? 'انتخاب زبان مبدأ' : 'انتخاب زبان مقصد';
+            renderLanguageList();
+            toggleModal(languageModal, true); 
+        }
+
+        function renderLanguageList() {
+            const container = document.getElementById('languageListContainer');
+            container.innerHTML = '';
+            languages.forEach(lang => {
+                const div = document.createElement('div');
+                div.className = 'picker-item flex items-center space-x-3 rtl:space-x-reverse';
+                div.innerHTML = `<span class="text-2xl">${lang.flag}</span> <span class="text-base font-medium">${lang.name}</span>`;
+                div.dataset.code = lang.code;
+                div.addEventListener('click', () => handleLanguageSelection(lang));
+                container.appendChild(div);
+            });
+        }
+
+        function handleLanguageSelection(lang) {
+            if (isSelectingSource) {
+                if (lang.code === targetLang.code) {
+                    [sourceLang, targetLang] = [targetLang, sourceLang];
+                } else {
+                    sourceLang = lang;
+                }
+            } else {
+                if (lang.code === sourceLang.code) {
+                    [sourceLang, targetLang] = [targetLang, sourceLang];
+                } else {
+                    targetLang = lang;
+                }
+            }
+            updateUI();
+            toggleModal(languageModal, false); 
+        }
+
+        // --- Drag Down to Close Logic ---
+        
+        let startY;
+        let isDragging = false;
+        let modalContentEl;
+
+        function handleTouchStart(e) {
+            modalContentEl = e.currentTarget;
+            if (modalContentEl.scrollTop === 0) {
+                startY = e.touches[0].clientY;
+                isDragging = true;
+                modalContentEl.style.transition = 'none'; 
+            }
+        }
+
+        function handleTouchMove(e) {
+            if (!isDragging) return;
+            
+            const currentY = e.touches[0].clientY;
+            const diffY = currentY - startY;
+            
+            if (diffY > 0) { // Dragging down
+                e.preventDefault();
+                modalContentEl.style.transform = `translateY(${diffY}px)`;
+            } else {
+                isDragging = false;
+                modalContentEl.style.transition = '';
+            }
+        }
+
+        function handleTouchEnd(e) {
+            if (!isDragging) return;
+            
+            modalContentEl.style.transition = ''; 
+            
+            const currentY = e.changedTouches[0].clientY;
+            const diffY = currentY - startY;
+            
+            const modalOverlay = modalContentEl.closest('.modal-overlay');
+
+            if (diffY > 100) { // Close threshold
+                if (modalOverlay.id === 'cameraModal') stopCamera(); 
+                toggleModal(modalOverlay, false);
+            } else {
+                modalContentEl.style.transform = 'translateY(0)';
+            }
+            
+            isDragging = false;
+        }
+
+        // --- Event Listeners ---
+        
+        // Close modal when clicking the overlay 
+        document.querySelectorAll('.modal-overlay').forEach(overlay => {
+            overlay.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal-overlay')) {
+                    const modalElement = e.target;
+                    if (modalElement.id === 'cameraModal') stopCamera();
+                    if (modalElement.id === 'globalMessageModal' || modalElement.id === 'confirmModal') {
+                        handleConfirm(false);
+                    } else {
+                        toggleModal(modalElement, false);
+                    }
+                }
+            });
+        });
+        document.getElementById('closeGlobalMessageModal').addEventListener('click', () => toggleModal(globalMessageModal, false));
+
+        // Confirmation Modal Event Listeners
+        closeConfirmModal.addEventListener('click', () => handleConfirm(false));
+        cancelConfirmBtn.addEventListener('click', () => handleConfirm(false));
+        confirmDeleteBtn.addEventListener('click', () => handleConfirm(true));
+
+
+        // Close button handlers
+        document.getElementById('closeSettingsModal').addEventListener('click', () => toggleModal(settingsModal, false));
+        document.getElementById('closeLanguageModal').addEventListener('click', () => toggleModal(languageModal, false));
+        document.getElementById('closeModelPickerModal').addEventListener('click', () => toggleModal(modelPickerModal, false));
+        document.getElementById('closeTonePickerModal').addEventListener('click', () => toggleModal(tonePickerModal, false));
+        document.getElementById('closeCameraModal').addEventListener('click', () => { stopCamera(); toggleModal(cameraModal, false); });
+        document.getElementById('closeHistoryModal').addEventListener('click', () => toggleModal(historyModal, false));
+        document.getElementById('closeFavoritesModal').addEventListener('click', () => toggleModal(favoritesModal, false));
+
+        // Settings Modal Handlers
+        document.getElementById('settingsNavBtn').addEventListener('click', () => {
+            toggleModal(settingsModal, true);
+            openRouterKeyInput.value = openRouterKey;
+            
+            if (openRouterKey && availableModels.length === 0) {
+                 fetchOpenRouterModels();
+            } else if (!openRouterKey) {
+                modelStatus.textContent = 'لطفاً کلید API را وارد کنید.';
+                modelStatus.classList.add('text-red-500');
+            }
+        });
+        document.getElementById('fetchModelsBtn').addEventListener('click', fetchOpenRouterModels);
+        document.getElementById('saveSettingsBtn').addEventListener('click', saveSettings);
+        
+        // Dedicated Picker Modals (New Logic)
+        openModelPickerBtn.addEventListener('click', () => {
+            if (availableModels.length === 0) {
+                 showMessage('error', 'ابتدا باید لیست مدل‌ها را بارگیری کنید.');
+                 return;
+            }
+            updateModelSelect(availableModels);
+            toggleModal(modelPickerModal, true);
+        });
+
+        openTonePickerBtn.addEventListener('click', () => {
+            populateToneSelect();
+            toggleModal(tonePickerModal, true);
+        });
+
+        // Language Buttons to open Language Picker Modal 
+        document.getElementById('sourceLangBtn').addEventListener('click', () => openLanguageModal(true));
+        document.getElementById('targetLangBtn').addEventListener('click', () => openLanguageModal(false));
+        
+        // Camera Modal Handler
+        document.getElementById('cameraNavBtn').addEventListener('click', () => {
+            toggleModal(cameraModal, true);
+            startCamera();
+        });
+
+        // History Modal Handler
+        document.getElementById('historyNavBtn').addEventListener('click', () => {
+            renderHistory();
+            toggleModal(historyModal, true);
+        });
+        document.getElementById('clearHistoryBtn').addEventListener('click', async () => {
+            // Replaced window.confirm with simple check/log for IFRAME environment compliance
+            const confirmed = await showConfirm('آیا مطمئن هستید که می‌خواهید کل تاریخچه ترجمه را پاک کنید؟');
+            if (confirmed) {
+                history = [];
+                saveHistory();
+                renderHistory();
+                renderFavorites();
+                showMessage('success', 'تاریخچه ترجمه پاک شد.');
+            }
+        });
+
+        // Favorites Modal Handler
+        document.getElementById('favoriteNavBtn').addEventListener('click', () => {
+            renderFavorites();
+            toggleModal(favoritesModal, true);
+        });
+
+        // Action Star Button (on main screen)
+        document.getElementById('favoriteBtn').addEventListener('click', () => {
+            if (history.length > 0) {
+                toggleFavorite(history[0].id);
+                updateFavoriteIcon(history[0]);
+            } else {
+                showMessage('error', 'ابتدا یک ترجمه انجام دهید.');
+            }
+        });
+
+        // 1. Language Swap
+        document.getElementById('swapLangsBtn').addEventListener('click', () => {
+            [sourceLang, targetLang] = [targetLang, sourceLang];
+            updateUI();
+            
+            if (sourceInput.value.trim() && targetOutput.textContent.trim() && targetOutput.textContent.trim() !== 'ترجمه اینجا ظاهر می‌شود.') {
+                const tempText = sourceInput.value;
+                sourceInput.value = targetOutput.textContent;
+                targetOutput.textContent = tempText;
+                fetchTranslation(sourceInput.value, sourceLang.code, targetLang.code);
+            } else {
+                targetOutput.textContent = 'ترجمه اینجا ظاهر می‌شود.';
+                clearMessage();
+            }
+        });
+        
+        // 2. Clear Input
+        document.getElementById('clearInputBtn').addEventListener('click', () => {
+            sourceInput.value = '';
+            targetOutput.textContent = 'ترجمه اینجا ظاهر می‌شود.';
+            clearMessage();
+            document.getElementById('copyBtn').disabled = document.getElementById('shareBtn').disabled = true;
+            document.getElementById('favoriteBtn').disabled = true;
+            document.getElementById('actionStarIcon').classList.remove('fill-yellow-500', 'text-yellow-500');
+            document.getElementById('actionStarIcon').classList.add('text-gray-500');
+        });
+
+        // 3. Translate Button Click
+        translateBtn.addEventListener('click', () => {
+            fetchTranslation(sourceInput.value, sourceLang.code, targetLang.code);
+        });
+
+        // 4. Source Input Keyup (for instant feedback and enabling button)
+        sourceInput.addEventListener('input', () => {
+            translateBtn.disabled = sourceInput.value.trim() === '';
+            document.getElementById('favoriteBtn').disabled = true;
+            document.getElementById('actionStarIcon').classList.remove('fill-yellow-500', 'text-yellow-500');
+            document.getElementById('actionStarIcon').classList.add('text-gray-500');
+        });
+
+        // 5. Copy Button
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const textToCopy = targetOutput.textContent;
+            if (textToCopy && textToCopy !== 'ترجمه اینجا ظاهر می‌شود.') {
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = textToCopy;
+                document.body.appendChild(tempTextArea);
+                tempTextArea.select();
+                try {
+                    document.execCommand('copy');
+                    showMessage('success', 'ترجمه کپی شد!');
+                } catch (err) {
+                    console.error('Copy failed:', err);
+                    showMessage('error', 'خطا در کپی. لطفا به صورت دستی کپی کنید.');
+                }
+                document.body.removeChild(tempTextArea);
+            }
+        });
+        
+        // --- Initialization ---
+        window.onload = () => {
+            loadData();
+            updateUI();
+            translateBtn.disabled = true;
+            
+            // Apply drag logic to bottom sheet content
+            ['cameraContent', 'historyContent', 'favoritesContent'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('touchstart', handleTouchStart, { passive: false });
+                    el.addEventListener('touchmove', handleTouchMove, { passive: false });
+                    el.addEventListener('touchend', handleTouchEnd);
+                }
+            });
+
+            if (!openRouterKey || !selectedModel) {
+                 showMessage('error', 'برای فعال‌سازی ترجمه واقعی، لطفاً کلید API و مدل خود را در **تنظیمات** وارد کنید.');
+            } else if (history.length > 0) {
+                 updateFavoriteIcon(history[0]);
+            }
+            
+            // Check if model picker button should be enabled based on loaded data
+            if (openRouterKey && selectedModel) {
+                 openModelPickerBtn.disabled = false;
+                 selectedModelDisplay.textContent = selectedModel;
+            } else {
+                 openModelPickerBtn.disabled = true;
+                 selectedModelDisplay.textContent = 'مدل انتخاب نشده';
+            }
+
+            // PWA Service Worker Registration for Offline Support
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('./sw.js')
+                        .then((registration) => {
+                            console.log('Service Worker registered with scope:', registration.scope);
+                        })
+                        .catch((error) => {
+                            console.log('Service Worker registration failed:', error);
+                        });
+                });
+            }
+        };
+    </script>
+
+</body>
+</html>
