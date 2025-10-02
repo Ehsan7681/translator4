@@ -7,11 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons CDN for modern, clean icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- PWA Manifest and Icons -->
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <!-- PWA Manifest and Icons (Commented out to comply with single-file mandate) -->
+    <!-- <link rel="manifest" href="manifest.json"> -->
+    <!-- <link rel="icon" type="image/png" sizes="32x32" href="icon-32.png"> -->
+    <!-- <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png"> -->
+    <!-- <link rel="apple-touch-icon" href="icon-192.png"> -->
     <meta name="theme-color" content="#3b82f6">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -22,19 +22,23 @@
         /* Base styles */
         body {
             font-family: 'Vazirmatn', sans-serif;
-            background-color: #1a202c; 
-            background-image: linear-gradient(135deg, #1f2937 25%, #4b5563 100%);
+            /* EDITED: Set background to white by default to match the app header/body for a seamless look */
+            background-color: #ffffff; /* Tailwind gray-50 or near white */ 
+            background-image: none;
             display: flex;
             justify-content: center;
             align-items: flex-start;
             min-height: 100vh;
-            padding: 0; /* Removed padding */
-            margin: 0;
+            /* padding-top to shift the app down, padding-bottom 0 to keep the footer at the edge */
+            padding-top: 16px; 
+            padding-bottom: 0;
+            margin: 0px;
             transition: background-color 0.3s;
         }
 
         /* Dark Mode Specific Styles */
         .dark {
+            /* EDITED: Changed background to match the dark phone-frame background */
             background-color: #0d1117;
             background-image: linear-gradient(135deg, #0d1117 25%, #161b22 100%);
         }
@@ -42,15 +46,16 @@
         .phone-frame {
             width: 100%;
             max-width: 420px;
-            /* Border radius removed for full-screen mobile look */
+            /* EDITED: Removed border radius to merge frame seamlessly with body background */
             border-radius: 0; 
             background-color: rgba(255, 255, 255, 0.95); 
             backdrop-filter: blur(8px);
-            box-shadow: none; /* Shadow removed */
+            box-shadow: none; 
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            min-height: 100vh; /* Use full viewport height */
+            /* EDITED: Adjusted min-height to account for 16px padding-top on body */
+            min-height: calc(100vh - 16px); 
             position: relative;
         }
 
@@ -79,6 +84,8 @@
         .dark .bg-blue-100 { background-color: #0c4a6e !important; }
         .dark .border-gray-300 { border-color: #444c56; }
         .dark input, .dark select { background-color: #161b22 !important; color: #c9d1d9; }
+        .dark .bg-red-100 { background-color: #4e1b21 !important; }
+        .dark .text-red-700 { color: #f87171 !important; }
 
         .text-input-box {
             min-height: 120px;
@@ -101,23 +108,65 @@
             box-shadow: 0 4px 10px rgba(66, 153, 225, 0.3);
         }
 
+        /* --- Navigation Bar Styles --- */
+        .nav-icon-container {
+            /* Ensure smooth transition for background and icon color */
+            transition: all 0.3s ease-in-out; 
+            padding: 10px 0; /* Space for clickability */
+            border-radius: 9999px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 56px; /* Fixed width for consistent alignment */
+            height: 56px; /* Fixed height */
+        }
+
+        .nav-icon-container .lucide {
+            transition: all 0.3s ease-in-out;
+            color: #9ca3af; /* Default gray-400 */
+            width: 28px; /* w-7 */
+            height: 28px; /* h-7 */
+        }
+        .nav-item {
+             /* Make the nav item a flex column container */
+            flex-direction: column; 
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        /* Active / Selected State */
+        .selected-nav-item .nav-icon-container {
+            background-color: #bfdbfe; /* blue-100 */
+        }
+        .dark .selected-nav-item .nav-icon-container {
+            background-color: #0c4a6e; /* dark blue */
+        }
+        .selected-nav-item .lucide {
+            color: #3b82f6; /* blue-500 */
+        }
+        .dark .selected-nav-item .lucide {
+            color: #93c5fd; /* light blue */
+        }
+        
         /* Full-screen Modal Styles (Overlay) */
         .modal-overlay {
-            position: absolute;
+            position: fixed !important;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
+            width: 100vw;
+            height: 100vh;
             background-color: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(10px);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 50;
+            z-index: 1000 !important;
             opacity: 0;
-            /* Smoother opacity transition */
-            transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94); 
-            touch-action: none; 
+            transition: opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            touch-action: none;
         }
         .modal-overlay.active {
             opacity: 1;
@@ -137,7 +186,6 @@
             
             transform: scale(0.95); 
             opacity: 0;
-            /* Smoother scale transition */
             transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             max-height: 80vh; 
         }
@@ -152,8 +200,8 @@
         /* --- Bottom Sheet Modal (History, Favorites, Camera) --- */
         .modal-content-bottom-sheet {
             width: 100%;
-            max-width: 420px; /* Inherit max width from phone-frame */
-            height: 85vh; /* Fixed height for Bottom Sheet */
+            max-width: 420px; 
+            height: 85vh; 
             background-color: white;
             border-radius: 0; 
             border-top-left-radius: 24px; 
@@ -294,7 +342,8 @@
         </div>
 
         <!-- Translation Area (Main Content) -->
-        <main class="flex-grow p-4 space-y-4 bg-gray-50/70 backdrop-blur-sm">
+        <!-- CHANGE 1: Added pt-6 for extra top padding for aesthetic improvement -->
+        <main class="flex-grow px-4 pt-6 pb-4 space-y-4 bg-gray-50/70 backdrop-blur-sm">
             
             <!-- Source Input Card -->
             <div id="sourceCard" class="card-container p-4 rounded-xl shadow-lg border-2 border-transparent">
@@ -309,10 +358,10 @@
                 <!-- Input Text Area -->
                 <textarea id="sourceInput" class="text-input-box text-gray-900" placeholder="متنی برای ترجمه وارد کنید..."></textarea>
                 
-                <!-- Footer: Microphone & Translate Button -->
+                <!-- Footer: Paste & Translate Button -->
                 <div class="flex justify-between items-center pt-2">
-                    <button id="micBtn" class="p-3 rounded-full bg-blue-100 text-blue-600 hover:bg-blue-200 transition shadow-sm">
-                        <i data-lucide="mic" class="w-5 h-5"></i>
+                    <button id="pasteBtn" class="p-3 rounded-full bg-green-100 text-green-600 hover:bg-green-200 transition shadow-sm">
+                        <i data-lucide="clipboard-list" class="w-5 h-5"></i>
                     </button>
                     
                     <button id="translateBtn" class="bg-orange-500 text-white font-bold py-3 px-8 rounded-full shadow-md hover:bg-orange-600 transition disabled:opacity-50">
@@ -323,17 +372,15 @@
 
             <!-- Target Output Card -->
             <div id="targetCard" class="card-container p-4 rounded-xl shadow-lg border-2 border-transparent" style="min-height: 180px;">
-                <!-- Header: Language & Speaker -->
+                <!-- Header: Language -->
                 <div class="flex justify-between items-center mb-2">
                     <span id="targetLangDisplay" class="text-xs font-semibold text-gray-600">انگلیسی</span>
-                    <button id="speakerBtn" class="text-gray-400 hover:text-gray-600 transition" disabled>
-                        <i data-lucide="volume-2" class="w-4 h-4"></i>
-                    </button>
+                    <span></span>
                 </div>
 
                 <!-- Output Text Area (Simulated) -->
                 <div id="targetOutput" class="text-input-box text-gray-700 overflow-auto cursor-default" style="min-height: 80px;" dir="ltr">
-                    ترجمه اینجا ظاهر می‌شود.
+                    Translation will appear here.
                 </div>
 
                 <!-- Loading/Error Message -->
@@ -341,11 +388,8 @@
 
                 <!-- Footer: Action Icons -->
                 <div class="flex justify-end items-center pt-2 space-x-4 rtl:space-x-reverse border-t border-gray-100 mt-2 pt-3">
-                    <button id="copyBtn" class="text-gray-500 hover:text-blue-500 transition" disabled>
+                    <button id="copyOutputBtn" class="text-gray-500 hover:text-blue-500 transition" disabled>
                         <i data-lucide="copy" class="w-5 h-5"></i>
-                    </button>
-                    <button id="shareBtn" class="text-gray-500 hover:text-blue-500 transition" disabled>
-                        <i data-lucide="share" class="w-5 h-5"></i>
                     </button>
                     <button id="favoriteBtn" class="text-gray-500 hover:text-yellow-500 transition" disabled>
                         <i id="actionStarIcon" data-lucide="star" class="w-5 h-5"></i>
@@ -356,34 +400,37 @@
         </main>
 
         <!-- Navigation Bar (Footer) -->
-        <nav class="flex justify-around items-center h-16 bg-white border-t border-gray-200 sticky bottom-0 nav-bar">
-            <!-- 1. Settings Button (Active) -->
-            <div id="settingsNavBtn" class="nav-item flex flex-col items-center text-blue-600 cursor-pointer">
-                <i data-lucide="settings" class="w-6 h-6"></i>
-                <span class="text-xs mt-1 font-semibold">تنظیمات</span>
-            </div>
-            <!-- 2. Camera Button (Real) -->
-            <div id="cameraNavBtn" class="nav-item flex flex-col items-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
-                <i data-lucide="camera" class="w-6 h-6"></i>
-                <span class="text-xs mt-1">دوربین</span>
-            </div>
-            <!-- Active/Selected Translator Icon -->
-            <div class="flex flex-col items-center text-blue-600 cursor-pointer">
-                <div class="p-2 bg-blue-100 rounded-full">
-                    <i data-lucide="languages" class="w-6 h-6"></i>
+        <nav class="flex justify-around items-center h-16 bg-white border-t border-gray-200 sticky bottom-0 nav-bar z-50">
+            <!-- 1. Settings Button -->
+            <button id="settingsNavBtn" class="nav-item" data-tab="settings">
+                <div class="nav-icon-container">
+                    <i data-lucide="settings"></i>
                 </div>
-                <span class="text-xs mt-1 font-semibold">مترجم</span>
-            </div>
-            <!-- 3. History Button (Real) -->
-            <div id="historyNavBtn" class="nav-item flex flex-col items-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
-                <i data-lucide="history" class="w-6 h-6"></i>
-                <span class="text-xs mt-1">تاریخچه</span>
-            </div>
-            <!-- 4. Favorite Button (Real) -->
-            <div id="favoriteNavBtn" class="nav-item flex flex-col items-center text-gray-400 hover:text-gray-600 transition cursor-pointer">
-                <i data-lucide="star" class="w-6 h-6"></i>
-                <span class="text-xs mt-1">علاقه‌مندی</span>
-            </div>
+            </button>
+            <!-- 2. Education Button -->
+            <button id="educationNavBtn" class="nav-item" data-tab="education">
+                <div class="nav-icon-container">
+                    <i data-lucide="book-open"></i>
+                </div>
+            </button>
+            <!-- 3. Translator Icon (Default Active) -->
+            <button id="translatorNavBtn" class="nav-item selected-nav-item" data-tab="translator">
+                <div class="nav-icon-container">
+                    <i data-lucide="languages"></i>
+                </div>
+            </button>
+            <!-- 4. History Button -->
+            <button id="historyNavBtn" class="nav-item" data-tab="history">
+                <div class="nav-icon-container">
+                    <i data-lucide="history"></i>
+                </div>
+            </button>
+            <!-- 5. Favorite Button -->
+            <button id="favoriteNavBtn" class="nav-item" data-tab="favorites">
+                <div class="nav-icon-container">
+                    <i data-lucide="star"></i>
+                </div>
+            </button>
         </nav>
         
         <!-- --- Modals --- -->
@@ -421,7 +468,7 @@
                     <!-- Model Selection Button (Opens Dedicated Modal) -->
                     <div class="space-y-2">
                         <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">مدل هوش مصنوعی انتخابی</label>
-                        <button id="openModelPickerBtn" class="w-full p-3 border border-gray-300 rounded-lg bg-white/50 backdrop-blur-sm appearance-none focus:ring-blue-500 focus:border-blue-500 transition flex justify-between items-center text-gray-800 dark:text-gray-200 shadow-sm hover:shadow-md">
+                        <button id="openModelPickerBtn" class="w-full p-3 border border-gray-300 rounded-lg bg-white/50 backdrop-blur-sm appearance-none focus:ring-blue-500 focus:border-blue-500 transition flex justify-between items-center text-gray-800 dark:text-gray-200 shadow-sm hover:shadow-md" disabled>
                             <span id="selectedModelDisplay" class="truncate font-medium">...مدل را انتخاب کنید</span>
                             <i data-lucide="chevron-right" class="w-5 h-5 text-gray-500"></i>
                         </button>
@@ -511,33 +558,24 @@
         </div>
 
 
-        <!-- 5. Camera Modal (Bottom Sheet - Drag Down to Close) -->
-        <div id="cameraModal" class="modal-overlay">
-            <div id="cameraContent" class="modal-content-bottom-sheet !p-0 pb-0">
+        <!-- 5. Education Modal (Bottom Sheet - Drag Down to Close) -->
+        <div id="educationModal" class="modal-overlay">
+            <div id="educationContent" class="modal-content-bottom-sheet">
                 <!-- Drag Handle -->
                 <div class="p-2 pt-3 flex justify-center sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
                     <div class="drag-handle"></div>
                 </div>
                 <!-- Modal Header -->
                 <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
-                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">ترجمه دوربین</h2>
-                    <button id="closeCameraModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
+                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">نکات آموزشی</h2>
+                    <button id="closeEducationModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
-                <!-- Modal Body -->
-                <div class="flex-grow flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-800 text-center overflow-y-auto">
-                    <div class="relative w-full max-w-sm aspect-video rounded-xl overflow-hidden bg-gray-300 dark:bg-gray-700 shadow-xl">
-                        <video id="cameraFeed" class="w-full h-full object-cover" autoplay playsinline></video>
-                        <p id="cameraStatus" class="absolute inset-0 flex items-center justify-center text-gray-600 dark:text-gray-400 font-medium">دسترسی به دوربین...</p>
-                    </div>
-                    
-                    <canvas id="cameraCanvas" class="hidden"></canvas>
-                    
-                    <button id="captureBtn" class="bg-blue-500 text-white font-bold py-3 px-8 rounded-full mt-6 shadow-lg hover:bg-blue-600 transition disabled:opacity-50">
-                        گرفتن عکس و ترجمه
-                    </button>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">ترجمه متن از عکس (شبیه‌سازی OCR)</p>
+
+                <!-- Modal Body (Education List) -->
+                <div id="educationListContainer" class="flex-grow overflow-y-auto">
+                    <!-- Education items will be rendered here -->
                 </div>
             </div>
         </div>
@@ -554,7 +592,7 @@
                     <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">تاریخچه ترجمه‌ها</h2>
                     <div class="flex items-center space-x-3 rtl:space-x-reverse">
                         <button id="clearHistoryBtn" class="text-red-500 hover:text-red-600 text-sm font-medium disabled:opacity-50">
-                             پاک کردن همه
+                               پاک کردن همه
                         </button>
                         <button id="closeHistoryModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
                             <i data-lucide="x" class="w-6 h-6"></i>
@@ -595,7 +633,7 @@
         <div id="globalMessageModal" class="modal-overlay">
             <div class="modal-content-center bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 p-6 shadow-xl text-center">
                 <i data-lucide="cloud-off" class="w-10 h-10 mx-auto mb-4 text-red-600 dark:text-red-400"></i>
-                <h3 id="globalMessageTitle" class="text-xl font-bold mb-2"></h3>
+                <h3 id="globalMessageTitle" class-="text-xl font-bold mb-2"></h3>
                 <p id="globalMessageContent" class="text-sm mb-4"></p>
                 <button id="closeGlobalMessageModal" class="bg-red-500 text-white font-medium py-2 px-6 rounded-full hover:bg-red-600 transition">
                     بستن
@@ -636,11 +674,14 @@
 
     <script>
         // Initialize Lucide Icons
-        lucide.createIcons();
+        if (typeof lucide !== 'undefined') lucide.createIcons();
 
         // --- Data and Constants ---
         const openRouterApiUrl = 'https://openrouter.ai/api/v1/chat/completions';
         const modelsApiUrl = 'https://openrouter.ai/api/v1/models';
+        
+        // Define active tab globally
+        let activeTab = 'translator'; 
 
         const translationTones = [
             { code: 'professional', name: 'حرفه‌ای و رسمی' }, { code: 'casual', name: 'دوستانه و روزمره' },
@@ -686,13 +727,13 @@
         let sourceLang = languages[0];
         let targetLang = languages[1];
         let isSelectingSource = true;
-        let activeStream = null; 
 
         // Local Storage Managed State
         let openRouterKey = '';
         let selectedModel = '';
         let selectedToneCode = '';
-        let history = []; 
+        let history = [];
+        let educationTips = [];
         let currentTheme = 'light';
         
         let availableModels = [];
@@ -706,7 +747,6 @@
         // Modals
         const settingsModal = document.getElementById('settingsModal');
         const languageModal = document.getElementById('languageModal');
-        const cameraModal = document.getElementById('cameraModal');
         const historyModal = document.getElementById('historyModal');
         const favoritesModal = document.getElementById('favoritesModal');
         const modelPickerModal = document.getElementById('modelPickerModal');
@@ -724,11 +764,12 @@
         
         let resolveConfirm; // To handle promise resolution
         
-        // Camera Elements
-        const cameraFeed = document.getElementById('cameraFeed');
-        const cameraCanvas = document.getElementById('cameraCanvas');
-        const cameraStatus = document.getElementById('cameraStatus');
-        const captureBtn = document.getElementById('captureBtn');
+        // Education Elements
+        const educationListContainer = document.getElementById('educationListContainer');
+
+        // Buttons
+        const pasteBtn = document.getElementById('pasteBtn');
+        const copyOutputBtn = document.getElementById('copyOutputBtn');
         
         // History/Favorites Containers
         const historyListContainer = document.getElementById('historyListContainer');
@@ -745,6 +786,9 @@
         const selectedModelDisplay = document.getElementById('selectedModelDisplay');
         const selectedToneDisplay = document.getElementById('selectedToneDisplay');
         const modelStatus = document.getElementById('modelStatus');
+
+        // Nav Bar Elements
+        const navButtons = document.querySelectorAll('.nav-item');
 
 
         // --- Theme Management ---
@@ -780,11 +824,44 @@
                 console.error("Error loading history from localStorage:", e);
                 history = [];
             }
+
+            // Load education tips
+            try {
+                educationTips = JSON.parse(localStorage.getItem('educationTips') || '[]');
+            } catch (e) {
+                console.error("Error loading education tips from localStorage:", e);
+                educationTips = [];
+            }
         }
 
         function saveHistory() {
             localStorage.setItem('translationHistory', JSON.stringify(history));
         }
+
+        function saveEducationTips() {
+            localStorage.setItem('educationTips', JSON.stringify(educationTips));
+        }
+
+        // --- Navigation Bar Logic ---
+        
+        /**
+         * Updates the visual state of the navigation bar icons based on the active tab.
+         * @param {string} currentTab - The ID of the currently active tab/modal.
+         */
+        function updateNavBarState(currentTab) {
+            activeTab = currentTab;
+            navButtons.forEach(button => {
+                const tab = button.getAttribute('data-tab');
+                button.classList.remove('selected-nav-item');
+                
+                if (tab === activeTab) {
+                    button.classList.add('selected-nav-item');
+                }
+            });
+            // Ensure icons are rendered/updated
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+        
 
         // --- Utility Functions ---
 
@@ -796,17 +873,48 @@
          */
         function toggleModal(modalElement, show) {
             const content = modalElement.querySelector('.modal-content-center') || modalElement.querySelector('.modal-content-bottom-sheet');
+            const isBottomSheet = content && content.classList.contains('modal-content-bottom-sheet');
+            const modalId = modalElement.id;
             
             if (show) {
+                modalElement.style.zIndex = '1000';
                 modalElement.style.display = 'flex';
-                modalElement.offsetWidth;
+                if (isBottomSheet) {
+                    modalElement.style.alignItems = 'flex-end';
+                    // FIX 1: Ensure transform is reset on the content element before adding 'active'
+                    if (content) content.style.transform = ''; 
+                } else {
+                    modalElement.style.alignItems = 'center';
+                }
+                modalElement.style.justifyContent = 'center';
+                modalElement.offsetWidth; // Trigger reflow to start transition
                 modalElement.classList.add('active');
+                
+                // Set active tab based on modal
+                if (modalId === 'settingsModal') updateNavBarState('settings');
+                else if (modalId === 'educationModal') updateNavBarState('education');
+                else if (modalId === 'historyModal') updateNavBarState('history');
+                else if (modalId === 'favoritesModal') updateNavBarState('favorites');
+
             } else {
                 modalElement.classList.remove('active');
+                modalElement.style.alignItems = '';
+                modalElement.style.zIndex = '';
                 
+                // FIX 2: Reset inline transform immediately on close to fix jump on next open/drag end
+                if (isBottomSheet && content) {
+                     content.style.transform = ''; 
+                }
+
                 // Wait for transition end before hiding the overlay
-                const duration = content && content.classList.contains('modal-content-bottom-sheet') ? 400 : 300;
-                setTimeout(() => modalElement.style.display = 'none', duration);
+                const duration = isBottomSheet ? 400 : 300;
+                setTimeout(() => {
+                    modalElement.style.display = 'none';
+                    // After closing a secondary modal, return selection to the main 'translator' tab
+                    if (modalId !== 'languageModal' && modalId !== 'modelPickerModal' && modalId !== 'tonePickerModal') {
+                        updateNavBarState('translator');
+                    }
+                }, duration);
             }
         }
 
@@ -834,7 +942,6 @@
         }
         
         function showMessage(type, content, targetEl = messageArea) {
-            // ... (showMessage logic remains the same) ...
             targetEl.classList.remove('hidden');
             let baseClasses = 'p-3 rounded-lg text-sm transition-all duration-300';
             let icon = '';
@@ -853,7 +960,7 @@
 
             targetEl.className = baseClasses + ' ' + styleClasses;
             targetEl.innerHTML = icon + content;
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
             if (targetEl === messageArea) setTimeout(clearMessage, 5000);
         }
 
@@ -888,9 +995,11 @@
             // Set text direction based on language code
             const isSourceRTL = ['fa', 'ar', 'he'].includes(sourceLang.code);
             sourceInput.setAttribute('dir', isSourceRTL ? 'rtl' : 'ltr');
+            sourceInput.placeholder = isSourceRTL ? 'متنی برای ترجمه وارد کنید...' : `Enter text to translate in ${sourceLang.name}...`;
 
             const isTargetRTL = ['fa', 'ar', 'he'].includes(targetLang.code);
             targetOutput.setAttribute('dir', isTargetRTL ? 'rtl' : 'ltr');
+            targetOutput.textContent = isTargetRTL ? 'ترجمه اینجا ظاهر می‌شود.' : `Translation will appear here in ${targetLang.name}.`;
 
             // Update settings buttons display
             selectedModelDisplay.textContent = selectedModel || '...مدل را انتخاب کنید';
@@ -902,8 +1011,12 @@
         // --- History/Favorites Rendering ---
 
         function renderHistoryItem(item, container) {
-            const sourceLangObj = getLanguageByCode(item.sourceLang.code);
-            const targetLangObj = getLanguageByCode(item.targetLang.code);
+            // FIX: Use optional chaining or safe checks if item.sourceLang might be missing/undefined
+            const sourceCode = item.sourceLang?.code || 'fa';
+            const targetCode = item.targetLang?.code || 'en';
+            
+            const sourceLangObj = getLanguageByCode(sourceCode);
+            const targetLangObj = getLanguageByCode(targetCode);
             const toneName = getToneName(item.tone);
 
             const div = document.createElement('div');
@@ -922,7 +1035,7 @@
                         </button>
                         <!-- Delete Button -->
                         <button class="delete-history-btn text-red-500 hover:text-red-700 transition" data-id="${item.id}">
-                             <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
                 </div>
@@ -935,8 +1048,10 @@
                 if (!e.target.closest('.favorite-toggle') && !e.target.closest('.delete-history-btn')) {
                     sourceInput.value = item.input;
                     targetOutput.textContent = item.output;
-                    sourceLang = item.sourceLang;
-                    targetLang = item.targetLang;
+                    sourceLang = getLanguageByCode(item.sourceLang?.code || 'fa');
+                    targetLang = getLanguageByCode(item.targetLang?.code || 'en');
+                    // Reset selected tone to the one used for the stored translation
+                    selectedToneCode = item.tone; 
                     updateUI();
                     translateBtn.disabled = false;
                     
@@ -944,16 +1059,75 @@
                     if (parentModal) toggleModal(parentModal, false);
 
                     showMessage('success', 'ترجمه به صفحه اصلی منتقل شد.');
-                    updateFavoriteIcon(item); 
+                    updateFavoriteIcon(item);
                 }
             });
             
             container.appendChild(div);
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+
+        function renderEducationItem(item, container) {
+            // FIX: Use optional chaining or safe checks to prevent 'Cannot read properties of undefined (reading 'code')'
+            const sourceCode = item.sourceLang?.code || 'fa';
+            const targetCode = item.targetLang?.code || 'en';
+            
+            const sourceLangObj = getLanguageByCode(sourceCode);
+            const targetLangObj = getLanguageByCode(targetCode);
+            const toneName = getToneName(item.tone);
+
+            const div = document.createElement('div');
+            div.className = 'history-item p-4 space-y-2 cursor-pointer text-gray-800 dark:text-gray-200 relative group border-b border-gray-100 dark:border-gray-700';
+            div.innerHTML = `
+                <div class="flex justify-between items-start text-sm font-medium mb-2">
+                    <div class="flex items-center space-x-1 rtl:space-x-reverse text-xs text-gray-500 dark:text-gray-400">
+                        <span>${sourceLangObj.flag} ${sourceLangObj.name}</span>
+                        <i data-lucide="arrow-left" class="w-3 h-3 mx-1"></i>
+                        <span>${targetLangObj.flag} ${targetLangObj.name}</span>
+                    </div>
+                    <span class="text-xs text-gray-400">${new Date(item.timestamp).toLocaleDateString('fa-IR')}</span>
+                </div>
+                <div class="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg mb-2">
+                    <p class="text-sm font-semibold text-blue-800 dark:text-blue-200 mb-1">متن اصلی:</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">${item.input.substring(0, 50)}${item.input.length > 50 ? '...' : ''}</p>
+                </div>
+                <div class="bg-green-50 dark:bg-green-900/30 p-3 rounded-lg mb-2">
+                    <p class="text-sm font-semibold text-green-800 dark:text-green-200 mb-1">ترجمه:</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">${item.output.substring(0, 50)}${item.output.length > 50 ? '...' : ''}</p>
+                </div>
+                <div class="bg-yellow-50 dark:bg-yellow-900/30 p-3 rounded-lg">
+                    <p class="text-sm font-semibold text-yellow-800 dark:text-yellow-200 mb-1">نکته آموزشی:</p>
+                    <p class="text-base text-gray-800 dark:text-gray-200">${item.tip}</p>
+                    <p class="text-xs text-blue-500 dark:text-blue-400 mt-1">لحن: ${toneName}</p>
+                </div>
+            `;
+
+            div.addEventListener('click', (e) => {
+                sourceInput.value = item.input;
+                targetOutput.textContent = item.output;
+                // FIX: Use safe checks when loading language data back to main state
+                sourceLang = getLanguageByCode(item.sourceLang?.code || 'fa');
+                targetLang = getLanguageByCode(item.targetLang?.code || 'en');
+                selectedToneCode = item.tone; // Load tone from saved item
+                updateUI();
+                translateBtn.disabled = false;
+
+                const parentModal = container.closest('.modal-overlay');
+                if (parentModal) toggleModal(parentModal, false);
+
+                showMessage('success', 'ترجمه به صفحه اصلی منتقل شد.');
+                // We need to find the history item to update the main favorite icon
+                const historyItem = history.find(i => i.input === item.input && i.output === item.output);
+                if (historyItem) updateFavoriteIcon(historyItem);
+            });
+            
+            container.appendChild(div);
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function renderHistory() {
             historyListContainer.innerHTML = '';
+            // Sort by ID (timestamp) descending
             const sortedHistory = history.slice().sort((a, b) => b.id - a.id);
             if (sortedHistory.length === 0) {
                 historyListContainer.innerHTML = '<p class="p-4 text-center text-gray-500 dark:text-gray-400">هیچ ترجمه‌ای در تاریخچه وجود ندارد.</p>';
@@ -963,6 +1137,17 @@
                 document.getElementById('clearHistoryBtn').disabled = false;
             }
             attachHistoryActionListeners();
+        }
+
+        function renderEducation() {
+            educationListContainer.innerHTML = '';
+            // Sort by ID (timestamp) descending
+            const sortedTips = educationTips.slice().sort((a, b) => b.id - a.id);
+            if (sortedTips.length === 0) {
+                educationListContainer.innerHTML = '<p class="p-4 text-center text-gray-500 dark:text-gray-400">هنوز نکته آموزشی اضافه نشده است. ابتدا یک ترجمه انجام دهید.</p>';
+            } else {
+                sortedTips.forEach(item => renderEducationItem(item, educationListContainer));
+            }
         }
 
         function renderFavorites() {
@@ -997,8 +1182,14 @@
                 saveHistory();
                 showMessage('success', item.isFavorite ? 'به علاقه‌مندی‌ها اضافه شد.' : 'از علاقه‌مندی‌ها حذف شد.');
                 
+                // Re-render the modals if they are open
                 if (historyModal.classList.contains('active')) renderHistory();
                 if (favoritesModal.classList.contains('active')) renderFavorites();
+                
+                // Update main action star icon if the toggled item is the one currently displayed (history[0])
+                if (history.length > 0 && history[0].id === item.id) {
+                    updateFavoriteIcon(item);
+                }
             }
         }
         
@@ -1021,55 +1212,79 @@
             });
         }
         
-        // --- Camera Logic --- (Unchanged)
-        function startCamera() {
-            if (activeStream) return;
-            cameraStatus.textContent = 'در حال دسترسی به دوربین...';
-            
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(stream => {
-                    activeStream = stream;
-                    cameraFeed.srcObject = stream;
-                    cameraFeed.onloadedmetadata = () => {
-                        cameraFeed.play();
-                        cameraStatus.textContent = 'آماده عکس‌برداری.';
-                        captureBtn.disabled = false;
-                    };
-                })
-                .catch(err => {
-                    console.error("Camera access denied:", err);
-                    cameraStatus.textContent = 'دسترسی به دوربین مسدود شد. لطفاً مجوز را تایید کنید.';
-                    captureBtn.disabled = true;
-                });
-        }
+        // --- Educational Tip Generation ---
+        async function generateEducationalTip(input, output, sourceCode, targetCode) {
+            if (!openRouterKey || !selectedModel) {
+                console.log('No API key or model selected, skipping educational tip.');
+                return;
+            }
 
-        function stopCamera() {
-            if (activeStream) {
-                activeStream.getTracks().forEach(track => track.stop());
-                activeStream = null;
-                cameraFeed.srcObject = null;
+            const sourceName = getLanguageByCode(sourceCode).name;
+            const targetName = getLanguageByCode(targetCode).name;
+            const selectedTone = getToneName(selectedToneCode);
+
+            const systemPrompt = `شما یک معلم زبان هستید. بر اساس این ترجمه از ${sourceName} (${sourceCode}) به ${targetName} (${targetCode}) با لحن "${selectedTone}": "${input}" -> "${output}"، یک نکته آموزشی ساده، مفید و روان به زبان فارسی ارائه دهید. نکته باید کوتاه (2-4 جمله)، جذاب و مرتبط با یادگیری زبان، گرامر، واژگان یا فرهنگی باشد. فقط نکته را بنویسید، بدون مقدمه یا توضیح اضافی.`;
+
+            const payload = {
+                model: selectedModel,
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    { role: "user", content: `ترجمه: "${input}" -> "${output}"` }
+                ],
+                temperature: 0.7,
+                max_tokens: 150
+            };
+
+            // Implementation of exponential backoff for tip generation
+            const maxRetries = 2;
+            let currentDelay = 1000;
+            
+            for (let i = 0; i < maxRetries; i++) {
+                try {
+                    const response = await fetch(openRouterApiUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${openRouterKey}`
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    if (!response.ok) {
+                        if (response.status === 429 && i < maxRetries - 1) {
+                            await new Promise(resolve => setTimeout(resolve, currentDelay));
+                            currentDelay *= 2;
+                            continue;
+                        }
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const result = await response.json();
+                    const tip = result.choices?.[0]?.message?.content?.trim() || 'نکته آموزشی در دسترس نیست.';
+
+                    const newTip = {
+                        id: Date.now(),
+                        input: input.trim(),
+                        output: output.trim(),
+                        sourceLang: sourceLang, // Store the full object (safer for retrieval)
+                        targetLang: targetLang, // Store the full object (safer for retrieval)
+                        tone: selectedToneCode,
+                        model: selectedModel,
+                        tip: tip,
+                        timestamp: new Date().toISOString()
+                    };
+                    educationTips.unshift(newTip);
+                    saveEducationTips();
+                    return; // Success, exit function
+                } catch (error) {
+                    console.error("Error generating educational tip:", error);
+                    // On final retry failure, just exit silently
+                    if (i === maxRetries - 1) {
+                        console.log("Failed to generate educational tip after multiple retries.");
+                    }
+                }
             }
         }
-        
-        captureBtn.addEventListener('click', () => {
-            if (!activeStream) return;
-            
-            const context = cameraCanvas.getContext('2d');
-            cameraCanvas.width = cameraFeed.videoWidth;
-            cameraCanvas.height = cameraFeed.videoHeight;
-            context.drawImage(cameraFeed, 0, 0, cameraCanvas.width, cameraCanvas.height);
-            
-            const simulatedText = "The quick brown fox jumps over the lazy dog. This is a simulated text from the camera image.";
-            
-            stopCamera();
-            toggleModal(cameraModal, false);
-            
-            sourceInput.value = simulatedText;
-            translateBtn.disabled = false;
-            showMessage('loading', 'متن از دوربین دریافت شد. در حال ترجمه...');
-            
-            fetchTranslation(simulatedText, sourceLang.code, targetLang.code);
-        });
 
         // --- Settings Management ---
 
@@ -1153,7 +1368,7 @@
                 });
             });
 
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
         
         function handleModelSelection(modelId) {
@@ -1188,6 +1403,9 @@
                 });
 
                 if (!response.ok) {
+                        // Check for API key expiration or invalid key (401/403)
+                    const errorDetails = await response.text();
+                    console.error("Model fetch error details:", errorDetails);
                     throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
                 }
 
@@ -1220,7 +1438,13 @@
         
         // --- Core Translation Logic ---
         async function fetchTranslation(text, sourceCode, targetCode) {
-            // 1. Check internet connection
+            // 1. Check input text
+            if (text.trim() === '') {
+                showMessage('error', 'لطفاً متنی برای ترجمه وارد کنید.');
+                return;
+            }
+            
+            // 2. Check internet connection
             if (!navigator.onLine) {
                 showGlobalMessage(
                     'بدون اتصال به اینترنت',
@@ -1230,7 +1454,7 @@
                 return;
             }
 
-            // 2. Check API keys
+            // 3. Check API keys
             if (!openRouterKey || !selectedModel) {
                 showMessage('error', 'لطفاً کلید OpenRouter API و مدل انتخابی را در **تنظیمات** وارد و ذخیره کنید تا ترجمه واقعی فعال شود.');
                 targetOutput.textContent = 'لطفاً برای فعال‌سازی ترجمه واقعی، کلید API و مدل خود را در بخش تنظیمات وارد نمایید.';
@@ -1245,7 +1469,8 @@
             const selectedTone = getToneName(selectedToneCode);
             showMessage('loading', `در حال ترجمه با لحن **${selectedTone}** توسط مدل ${selectedModel}...`);
             
-            document.getElementById('copyBtn').disabled = document.getElementById('shareBtn').disabled = document.getElementById('favoriteBtn').disabled = true;
+            document.getElementById('favoriteBtn').disabled = true;
+            copyOutputBtn.disabled = true;
 
             const sourceName = getLanguageByCode(sourceCode).name;
             const targetName = getLanguageByCode(targetCode).name;
@@ -1263,6 +1488,7 @@
 
             const maxRetries = 3;
             let currentDelay = 1000;
+            let translatedText = '';
             
             for (let i = 0; i < maxRetries; i++) {
                 try {
@@ -1281,43 +1507,57 @@
                             currentDelay *= 2;
                             continue;
                         }
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        const errorBody = await response.json();
+                        throw new Error(`HTTP error! status: ${response.status}. Detail: ${errorBody.error?.message || response.statusText}`);
                     }
                     
                     const result = await response.json();
-                    const translatedText = result.choices?.[0]?.message?.content || 'خطا در دریافت ترجمه.';
+                    translatedText = result.choices?.[0]?.message?.content || 'خطا در دریافت ترجمه.';
                     
-                    const newEntry = {
-                        id: Date.now(),
-                        input: text.trim(),
-                        output: translatedText.trim(),
-                        sourceLang: sourceLang,
-                        targetLang: targetLang,
-                        tone: selectedToneCode,
-                        model: selectedModel,
-                        timestamp: new Date().toISOString(),
-                        isFavorite: false
-                    };
-                    history.unshift(newEntry);
-                    saveHistory();
-                    
-                    targetOutput.textContent = translatedText.trim();
-                    clearMessage();
-                    
-                    document.getElementById('copyBtn').disabled = document.getElementById('shareBtn').disabled = false;
-                    translateBtn.disabled = false;
-                    updateFavoriteIcon(newEntry);
-                    
-                    return;
+                    break; // Success, exit loop
 
                 } catch (error) {
                     console.error("Translation API Error:", error);
                     let displayError = error.message.includes('401') ? 
                         'خطای احراز هویت (401). کلید API را بررسی کنید.' : 
                         'خطا در ارتباط با OpenRouter. لطفاً دوباره تلاش کنید.';
-                    showMessage('error', displayError);
-                    break;
+                    
+                    if (i === maxRetries - 1) {
+                        showMessage('error', displayError);
+                    }
                 }
+            }
+            
+            if (translatedText) {
+                const newEntry = {
+                    id: Date.now(),
+                    input: text.trim(),
+                    output: translatedText.trim(),
+                    sourceLang: sourceLang, // Store the full object (safer for retrieval)
+                    targetLang: targetLang, // Store the full object (safer for retrieval)
+                    tone: selectedToneCode,
+                    model: selectedModel,
+                    timestamp: new Date().toISOString(),
+                    isFavorite: false
+                };
+                
+                // Add to history and save
+                history.unshift(newEntry);
+                if (history.length > 50) history.pop(); // Keep history manageable
+                saveHistory();
+                
+                targetOutput.textContent = translatedText.trim();
+                clearMessage();
+                
+                document.getElementById('favoriteBtn').disabled = false;
+                copyOutputBtn.disabled = false;
+                
+                updateFavoriteIcon(newEntry);
+                
+                // Generate educational tip after successful translation
+                setTimeout(() => {
+                    generateEducationalTip(text, translatedText, sourceLang.code, targetLang.code);
+                }, 1000);
             }
 
             translateBtn.disabled = false;
@@ -1330,7 +1570,7 @@
             icon.classList.toggle('text-yellow-500', isFavoriteNow);
             icon.classList.toggle('text-gray-500', !isFavoriteNow);
             document.getElementById('favoriteBtn').disabled = false;
-            lucide.createIcons();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         // --- Language Modal Logic ---
@@ -1345,13 +1585,20 @@
             const container = document.getElementById('languageListContainer');
             container.innerHTML = '';
             languages.forEach(lang => {
+                const isSelected = isSelectingSource ? (lang.code === sourceLang.code) : (lang.code === targetLang.code);
                 const div = document.createElement('div');
-                div.className = 'picker-item flex items-center space-x-3 rtl:space-x-reverse';
-                div.innerHTML = `<span class="text-2xl">${lang.flag}</span> <span class="text-base font-medium">${lang.name}</span>`;
+                div.className = `picker-item flex items-center space-x-3 rtl:space-x-reverse justify-between ${isSelected ? 'bg-blue-50 dark:bg-blue-900/50' : ''}`;
+                div.innerHTML = `
+                    <div class="flex items-center space-x-3 rtl:space-x-reverse">
+                        <span class="text-2xl">${lang.flag}</span> <span class="text-base font-medium">${lang.name}</span>
+                    </div>
+                    ${isSelected ? '<i data-lucide="check" class="w-5 h-5 text-blue-600"></i>' : ''}
+                `;
                 div.dataset.code = lang.code;
                 div.addEventListener('click', () => handleLanguageSelection(lang));
                 container.appendChild(div);
             });
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         }
 
         function handleLanguageSelection(lang) {
@@ -1380,6 +1627,7 @@
 
         function handleTouchStart(e) {
             modalContentEl = e.currentTarget;
+            // Only start dragging if at the top of the scrollable area
             if (modalContentEl.scrollTop === 0) {
                 startY = e.touches[0].clientY;
                 isDragging = true;
@@ -1397,6 +1645,7 @@
                 e.preventDefault();
                 modalContentEl.style.transform = `translateY(${diffY}px)`;
             } else {
+                // If user scrolls up, disable dragging and let natural scroll take over
                 isDragging = false;
                 modalContentEl.style.transition = '';
             }
@@ -1413,10 +1662,10 @@
             const modalOverlay = modalContentEl.closest('.modal-overlay');
 
             if (diffY > 100) { // Close threshold
-                if (modalOverlay.id === 'cameraModal') stopCamera(); 
                 toggleModal(modalOverlay, false);
             } else {
-                modalContentEl.style.transform = 'translateY(0)';
+                // FIX 3: Clear inline transform on drag failure to let CSS control the 'active' state
+                modalContentEl.style.transform = ''; 
             }
             
             isDragging = false;
@@ -1429,9 +1678,8 @@
             overlay.addEventListener('click', (e) => {
                 if (e.target.classList.contains('modal-overlay')) {
                     const modalElement = e.target;
-                    if (modalElement.id === 'cameraModal') stopCamera();
                     if (modalElement.id === 'globalMessageModal' || modalElement.id === 'confirmModal') {
-                        handleConfirm(false);
+                        handleConfirm(false); // Cancel on outside click for confirmation
                     } else {
                         toggleModal(modalElement, false);
                     }
@@ -1451,7 +1699,7 @@
         document.getElementById('closeLanguageModal').addEventListener('click', () => toggleModal(languageModal, false));
         document.getElementById('closeModelPickerModal').addEventListener('click', () => toggleModal(modelPickerModal, false));
         document.getElementById('closeTonePickerModal').addEventListener('click', () => toggleModal(tonePickerModal, false));
-        document.getElementById('closeCameraModal').addEventListener('click', () => { stopCamera(); toggleModal(cameraModal, false); });
+        document.getElementById('closeEducationModal').addEventListener('click', () => toggleModal(educationModal, false));
         document.getElementById('closeHistoryModal').addEventListener('click', () => toggleModal(historyModal, false));
         document.getElementById('closeFavoritesModal').addEventListener('click', () => toggleModal(favoritesModal, false));
 
@@ -1465,6 +1713,10 @@
             } else if (!openRouterKey) {
                 modelStatus.textContent = 'لطفاً کلید API را وارد کنید.';
                 modelStatus.classList.add('text-red-500');
+            } else if (availableModels.length > 0) {
+                modelStatus.textContent = `${availableModels.length} مدل بارگیری شده.`;
+                modelStatus.classList.remove('text-red-500');
+                modelStatus.classList.add('text-green-500');
             }
         });
         document.getElementById('fetchModelsBtn').addEventListener('click', fetchOpenRouterModels);
@@ -1489,19 +1741,78 @@
         document.getElementById('sourceLangBtn').addEventListener('click', () => openLanguageModal(true));
         document.getElementById('targetLangBtn').addEventListener('click', () => openLanguageModal(false));
         
-        // Camera Modal Handler
-        document.getElementById('cameraNavBtn').addEventListener('click', () => {
-            toggleModal(cameraModal, true);
-            startCamera();
+        // --- Navigation Button Handlers ---
+        document.getElementById('settingsNavBtn').addEventListener('click', () => {
+            updateNavBarState('settings');
+            toggleModal(settingsModal, true);
         });
 
-        // History Modal Handler
+        document.getElementById('educationNavBtn').addEventListener('click', () => {
+            updateNavBarState('education');
+            renderEducation();
+            toggleModal(educationModal, true);
+        });
+        
+        // New Translator button click logic (only for setting active state, action is on main screen)
+        document.getElementById('translatorNavBtn').addEventListener('click', () => {
+            updateNavBarState('translator');
+        });
+
         document.getElementById('historyNavBtn').addEventListener('click', () => {
+            updateNavBarState('history');
             renderHistory();
             toggleModal(historyModal, true);
         });
+
+        document.getElementById('favoriteNavBtn').addEventListener('click', () => {
+            updateNavBarState('favorites');
+            renderFavorites();
+            toggleModal(favoritesModal, true);
+        });
+
+        // Paste Button
+        pasteBtn.addEventListener('click', async () => {
+            try {
+                // Use execCommand fallback if navigator.clipboard isn't available/authorized
+                let text = '';
+                if (navigator.clipboard && navigator.clipboard.readText) {
+                    text = await navigator.clipboard.readText();
+                } else if (document.execCommand) {
+                    // This is less reliable for reading, but we will rely on modern clipboard API
+                    // If readText fails, we cannot read the clipboard due to browser security restrictions in iframes
+                    // We will just stick to readText for modern browsers/platforms
+                    throw new Error("Clipboard read not supported or authorized.");
+                }
+                
+                sourceInput.value = text;
+                translateBtn.disabled = text.trim() === '';
+                showMessage('success', 'متن جایگذاری شد.');
+            } catch (err) {
+                showMessage('error', 'خطا در خواندن کلیپ‌بورد. لطفاً به صورت دستی متن را وارد کنید.');
+            }
+        });
+
+        // Copy Output Button
+        copyOutputBtn.addEventListener('click', () => {
+            const text = targetOutput.textContent.trim();
+            if (text && text !== getTargetPlaceholder()) {
+                // Fallback for copy command using execCommand for better iframe compatibility
+                const tempTextarea = document.createElement('textarea');
+                tempTextarea.value = text;
+                document.body.appendChild(tempTextarea);
+                tempTextarea.select();
+                try {
+                    document.execCommand('copy');
+                    showMessage('success', 'ترجمه کپی شد!');
+                } catch (err) {
+                    showMessage('error', 'خطا در کپی. لطفاً به صورت دستی کپی کنید.');
+                }
+                document.body.removeChild(tempTextarea);
+            }
+        });
+
+        // History Clear Button Handler
         document.getElementById('clearHistoryBtn').addEventListener('click', async () => {
-            // Replaced window.confirm with simple check/log for IFRAME environment compliance
             const confirmed = await showConfirm('آیا مطمئن هستید که می‌خواهید کل تاریخچه ترجمه را پاک کنید؟');
             if (confirmed) {
                 history = [];
@@ -1512,17 +1823,11 @@
             }
         });
 
-        // Favorites Modal Handler
-        document.getElementById('favoriteNavBtn').addEventListener('click', () => {
-            renderFavorites();
-            toggleModal(favoritesModal, true);
-        });
-
         // Action Star Button (on main screen)
         document.getElementById('favoriteBtn').addEventListener('click', () => {
             if (history.length > 0) {
-                toggleFavorite(history[0].id);
-                updateFavoriteIcon(history[0]);
+                // Toggle favorite status of the most recent item (which is displayed on screen)
+                toggleFavorite(history[0].id); 
             } else {
                 showMessage('error', 'ابتدا یک ترجمه انجام دهید.');
             }
@@ -1533,24 +1838,29 @@
             [sourceLang, targetLang] = [targetLang, sourceLang];
             updateUI();
             
-            if (sourceInput.value.trim() && targetOutput.textContent.trim() && targetOutput.textContent.trim() !== 'ترجمه اینجا ظاهر می‌شود.') {
-                const tempText = sourceInput.value;
-                sourceInput.value = targetOutput.textContent;
-                targetOutput.textContent = tempText;
+            // Swap text content as well
+            const sourceText = sourceInput.value;
+            const targetText = targetOutput.textContent.trim();
+            
+            sourceInput.value = targetText === getTargetPlaceholder() ? '' : targetText;
+            targetOutput.textContent = sourceText || getTargetPlaceholder();
+            
+            translateBtn.disabled = sourceInput.value.trim() === '';
+            copyOutputBtn.disabled = sourceInput.value.trim() === '';
+
+            // If text exists in input now, automatically translate (optional, but good UX)
+            if (sourceInput.value.trim()) {
                 fetchTranslation(sourceInput.value, sourceLang.code, targetLang.code);
-            } else {
-                targetOutput.textContent = 'ترجمه اینجا ظاهر می‌شود.';
-                clearMessage();
             }
         });
         
         // 2. Clear Input
         document.getElementById('clearInputBtn').addEventListener('click', () => {
             sourceInput.value = '';
-            targetOutput.textContent = 'ترجمه اینجا ظاهر می‌شود.';
+            targetOutput.textContent = getTargetPlaceholder();
             clearMessage();
-            document.getElementById('copyBtn').disabled = document.getElementById('shareBtn').disabled = true;
             document.getElementById('favoriteBtn').disabled = true;
+            copyOutputBtn.disabled = true;
             document.getElementById('actionStarIcon').classList.remove('fill-yellow-500', 'text-yellow-500');
             document.getElementById('actionStarIcon').classList.add('text-gray-500');
         });
@@ -1563,38 +1873,27 @@
         // 4. Source Input Keyup (for instant feedback and enabling button)
         sourceInput.addEventListener('input', () => {
             translateBtn.disabled = sourceInput.value.trim() === '';
+            // Reset favorite/copy status when input changes
             document.getElementById('favoriteBtn').disabled = true;
+            copyOutputBtn.disabled = true;
             document.getElementById('actionStarIcon').classList.remove('fill-yellow-500', 'text-yellow-500');
             document.getElementById('actionStarIcon').classList.add('text-gray-500');
         });
 
-        // 5. Copy Button
-        document.getElementById('copyBtn').addEventListener('click', () => {
-            const textToCopy = targetOutput.textContent;
-            if (textToCopy && textToCopy !== 'ترجمه اینجا ظاهر می‌شود.') {
-                const tempTextArea = document.createElement('textarea');
-                tempTextArea.value = textToCopy;
-                document.body.appendChild(tempTextArea);
-                tempTextArea.select();
-                try {
-                    document.execCommand('copy');
-                    showMessage('success', 'ترجمه کپی شد!');
-                } catch (err) {
-                    console.error('Copy failed:', err);
-                    showMessage('error', 'خطا در کپی. لطفا به صورت دستی کپی کنید.');
-                }
-                document.body.removeChild(tempTextArea);
-            }
-        });
+        function getTargetPlaceholder() {
+            const isTargetRTL = ['fa', 'ar', 'he'].includes(targetLang.code);
+            return isTargetRTL ? 'ترجمه اینجا ظاهر می‌شود.' : `Translation will appear here in ${targetLang.name}.`;
+        }
         
         // --- Initialization ---
         window.onload = () => {
             loadData();
             updateUI();
             translateBtn.disabled = true;
+            if (typeof lucide !== 'undefined') lucide.createIcons(); // Ensure icons are loaded for nav
             
             // Apply drag logic to bottom sheet content
-            ['cameraContent', 'historyContent', 'favoritesContent'].forEach(id => {
+            ['educationContent', 'historyContent', 'favoritesContent'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.addEventListener('touchstart', handleTouchStart, { passive: false });
@@ -1605,31 +1904,37 @@
 
             if (!openRouterKey || !selectedModel) {
                  showMessage('error', 'برای فعال‌سازی ترجمه واقعی، لطفاً کلید API و مدل خود را در **تنظیمات** وارد کنید.');
-            } else if (history.length > 0) {
+            } 
+            
+            // If the latest history item exists, update the main favorite icon
+            if (history.length > 0) {
                  updateFavoriteIcon(history[0]);
+                 copyOutputBtn.disabled = false;
+                 targetOutput.textContent = history[0].output;
+                 sourceInput.value = history[0].input;
+                 translateBtn.disabled = false;
+                 sourceLang = history[0].sourceLang;
+                 targetLang = history[0].targetLang;
+                 selectedToneCode = history[0].tone;
+                 updateUI();
             }
             
             // Check if model picker button should be enabled based on loaded data
-            if (openRouterKey && selectedModel) {
+            if (openRouterKey) {
+                 openRouterKeyInput.value = openRouterKey;
                  openModelPickerBtn.disabled = false;
-                 selectedModelDisplay.textContent = selectedModel;
+                 if (selectedModel) {
+                     selectedModelDisplay.textContent = selectedModel;
+                 } else {
+                     selectedModelDisplay.textContent = 'مدل انتخاب نشده';
+                 }
             } else {
                  openModelPickerBtn.disabled = true;
                  selectedModelDisplay.textContent = 'مدل انتخاب نشده';
             }
-
-            // PWA Service Worker Registration for Offline Support
-            if ('serviceWorker' in navigator) {
-                window.addEventListener('load', () => {
-                    navigator.serviceWorker.register('./sw.js')
-                        .then((registration) => {
-                            console.log('Service Worker registered with scope:', registration.scope);
-                        })
-                        .catch((error) => {
-                            console.log('Service Worker registration failed:', error);
-                        });
-                });
-            }
+            
+            // Initialize nav bar state
+            updateNavBarState('translator');
         };
     </script>
 
