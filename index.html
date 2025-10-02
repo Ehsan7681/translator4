@@ -231,7 +231,13 @@
             border-radius: 2px;
             margin: 0 auto 8px auto;
         }
-
+        
+        /* New area for dragging that includes handle and header */
+        .modal-drag-area {
+            cursor: grab;
+            touch-action: none; /* Prevents scroll when dragging starts */
+        }
+        
         /* History/Favorites Item Styles */
         .history-item {
             border-bottom: 1px solid #f3f4f6;
@@ -561,12 +567,12 @@
         <!-- 5. Education Modal (Bottom Sheet - Drag Down to Close) -->
         <div id="educationModal" class="modal-overlay">
             <div id="educationContent" class="modal-content-bottom-sheet">
-                <!-- Drag Handle -->
-                <div class="p-2 pt-3 flex justify-center sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                <!-- NEW: Drag Area -->
+                <div id="educationDragArea" class="modal-drag-area p-2 pt-3 flex justify-center sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70 z-20">
                     <div class="drag-handle"></div>
                 </div>
                 <!-- Modal Header -->
-                <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
+                <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70 z-10">
                     <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">نکات آموزشی</h2>
                     <button id="closeEducationModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
                         <i data-lucide="x" class="w-6 h-6"></i>
@@ -583,20 +589,20 @@
         <!-- 6. History Modal (Bottom Sheet - Drag Down to Close) -->
         <div id="historyModal" class="modal-overlay">
             <div id="historyContent" class="modal-content-bottom-sheet">
-                <!-- Drag Handle -->
-                <div class="p-2 pt-3 flex justify-center sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
-                    <div class="drag-handle"></div>
-                </div>
-                <!-- Modal Header -->
-                <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
-                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">تاریخچه ترجمه‌ها</h2>
-                    <div class="flex items-center space-x-3 rtl:space-x-reverse">
-                        <button id="clearHistoryBtn" class="text-red-500 hover:text-red-600 text-sm font-medium disabled:opacity-50">
-                               پاک کردن همه
-                        </button>
-                        <button id="closeHistoryModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
-                            <i data-lucide="x" class="w-6 h-6"></i>
-                        </button>
+                <!-- NEW: Drag Area -->
+                <div id="historyDragArea" class="modal-drag-area p-2 pt-3 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70 z-20">
+                    <div class="drag-handle mx-auto"></div>
+                    <!-- Modal Header is now inside the drag area -->
+                    <div class="flex justify-between items-center p-4 border-b border-gray-200">
+                        <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">تاریخچه ترجمه‌ها</h2>
+                        <div class="flex items-center space-x-3 rtl:space-x-reverse">
+                            <button id="clearHistoryBtn" class="text-red-500 hover:text-red-600 text-sm font-medium disabled:opacity-50">
+                                   پاک کردن همه
+                            </button>
+                            <button id="closeHistoryModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
+                                <i data-lucide="x" class="w-6 h-6"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -610,16 +616,16 @@
         <!-- 7. Favorites Modal (Bottom Sheet - Drag Down to Close) -->
         <div id="favoritesModal" class="modal-overlay">
             <div id="favoritesContent" class="modal-content-bottom-sheet">
-                <!-- Drag Handle -->
-                <div class="p-2 pt-3 flex justify-center sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
-                    <div class="drag-handle"></div>
-                </div>
-                <!-- Modal Header -->
-                <div class="flex justify-between items-center p-4 border-b border-gray-200 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70">
-                    <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">علاقه‌مندی‌های من</h2>
-                    <button id="closeFavoritesModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
-                        <i data-lucide="x" class="w-6 h-6"></i>
-                    </button>
+                <!-- NEW: Drag Area -->
+                <div id="favoritesDragArea" class="modal-drag-area p-2 pt-3 sticky top-0 bg-white/70 backdrop-blur-sm dark:bg-gray-900/70 z-20">
+                    <div class="drag-handle mx-auto"></div>
+                    <!-- Modal Header is now inside the drag area -->
+                    <div class="flex justify-between items-center p-4 border-b border-gray-200">
+                        <h2 class="text-lg font-bold text-gray-800 dark:text-gray-200">علاقه‌مندی‌های من</h2>
+                        <button id="closeFavoritesModal" class="text-gray-500 hover:text-gray-800 dark:hover:text-gray-400">
+                            <i data-lucide="x" class="w-6 h-6"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Modal Body (Favorites List) -->
@@ -1626,33 +1632,34 @@
         let modalContentEl;
 
         function handleTouchStart(e) {
-            modalContentEl = e.currentTarget;
-            // Only start dragging if at the top of the scrollable area
-            if (modalContentEl.scrollTop === 0) {
-                startY = e.touches[0].clientY;
-                isDragging = true;
-                modalContentEl.style.transition = 'none'; 
-            }
+            // Find the parent bottom sheet content div from the drag area/header
+            modalContentEl = e.currentTarget.closest('.modal-content-bottom-sheet'); 
+            
+            // We only care about drag events starting here
+            startY = e.touches[0].clientY;
+            isDragging = true;
+            if (modalContentEl) modalContentEl.style.transition = 'none'; 
         }
 
         function handleTouchMove(e) {
-            if (!isDragging) return;
+            if (!isDragging || !modalContentEl) return;
             
             const currentY = e.touches[0].clientY;
             const diffY = currentY - startY;
             
             if (diffY > 0) { // Dragging down
-                e.preventDefault();
+                e.preventDefault(); // Prevent page scroll
                 modalContentEl.style.transform = `translateY(${diffY}px)`;
             } else {
-                // If user scrolls up, disable dragging and let natural scroll take over
+                // If dragging moves upwards (diffY < 0), stop dragging to allow scrolling the content
                 isDragging = false;
+                modalContentEl.style.transform = 'translateY(0)';
                 modalContentEl.style.transition = '';
             }
         }
 
         function handleTouchEnd(e) {
-            if (!isDragging) return;
+            if (!isDragging || !modalContentEl) return;
             
             modalContentEl.style.transition = ''; 
             
@@ -1664,7 +1671,7 @@
             if (diffY > 100) { // Close threshold
                 toggleModal(modalOverlay, false);
             } else {
-                // FIX 3: Clear inline transform on drag failure to let CSS control the 'active' state
+                // Snap back to open position
                 modalContentEl.style.transform = ''; 
             }
             
@@ -1699,12 +1706,16 @@
         document.getElementById('closeLanguageModal').addEventListener('click', () => toggleModal(languageModal, false));
         document.getElementById('closeModelPickerModal').addEventListener('click', () => toggleModal(modelPickerModal, false));
         document.getElementById('closeTonePickerModal').addEventListener('click', () => toggleModal(tonePickerModal, false));
+        
+        // Individual Close buttons for Bottom Sheets
         document.getElementById('closeEducationModal').addEventListener('click', () => toggleModal(educationModal, false));
         document.getElementById('closeHistoryModal').addEventListener('click', () => toggleModal(historyModal, false));
         document.getElementById('closeFavoritesModal').addEventListener('click', () => toggleModal(favoritesModal, false));
 
+
         // Settings Modal Handlers
         document.getElementById('settingsNavBtn').addEventListener('click', () => {
+            updateNavBarState('settings');
             toggleModal(settingsModal, true);
             openRouterKeyInput.value = openRouterKey;
             
@@ -1742,9 +1753,8 @@
         document.getElementById('targetLangBtn').addEventListener('click', () => openLanguageModal(false));
         
         // --- Navigation Button Handlers ---
-        document.getElementById('settingsNavBtn').addEventListener('click', () => {
-            updateNavBarState('settings');
-            toggleModal(settingsModal, true);
+        document.getElementById('translatorNavBtn').addEventListener('click', () => {
+            updateNavBarState('translator');
         });
 
         document.getElementById('educationNavBtn').addEventListener('click', () => {
@@ -1753,11 +1763,6 @@
             toggleModal(educationModal, true);
         });
         
-        // New Translator button click logic (only for setting active state, action is on main screen)
-        document.getElementById('translatorNavBtn').addEventListener('click', () => {
-            updateNavBarState('translator');
-        });
-
         document.getElementById('historyNavBtn').addEventListener('click', () => {
             updateNavBarState('history');
             renderHistory();
@@ -1892,8 +1897,8 @@
             translateBtn.disabled = true;
             if (typeof lucide !== 'undefined') lucide.createIcons(); // Ensure icons are loaded for nav
             
-            // Apply drag logic to bottom sheet content
-            ['educationContent', 'historyContent', 'favoritesContent'].forEach(id => {
+            // Apply drag logic to drag areas
+            ['educationDragArea', 'historyDragArea', 'favoritesDragArea'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) {
                     el.addEventListener('touchstart', handleTouchStart, { passive: false });
